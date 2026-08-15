@@ -1,76 +1,87 @@
-# Architecture
+# Handover
 
-System topology, component responsibilities, and latency budgets for the SEC Financial Intelligence RAG Engine.
+Project status and orientation notes for the SEC Financial Intelligence RAG Engine. See `ARCHITECTURE.md` for full system design, `DECISIONS.md` for the decision log (DEC-XXX references), and `CONSTRAINTS.md` for hard limits and operational rules.
 
-## 1. Topology
+## 1. Project summary
 
+A RAG system for querying SEC financial filings (10-Q/10-K). A Streamlit frontend talks to a FastAPI backend, which runs a LangGraph state machine that decomposes a query, retrieves metadata-filtered chunks from Qdrant, reranks locally with FlashRank, synthesizes a comparison via Groq, and verifies every numerical claim against retrieved context before responding — with a bounded retry loop if grounding verification fails.
+
+## 2. Current status
+
+- Core query pipeline (decompose → retrieve → rerank → grade → synthesize → verify → respond) is implemented end-to-end in `src/graph.py` / `src/nodes.py`.
+- Bounded hallucination-retry loop (`MAX_GENERATION_RETRIES`, DEC-014) and logged retry/backoff wrapper for transient Groq errors (DEC-015) are implemented, per `CONSTRAINTS.md` §11.
+- Ingestion pipeline (`src/parser.py`) handles PDF text + table extraction via `pdfplumber` and chunking.
+- Vector store isolation by `ticker` / `fiscal_year` / `fiscal_period` is in place in `src/database.py` to prevent cross-quarter context contamination.
+
+## 3. Recently completed
+
+- **Retry-path test** — test coverage for the `increment_retry` → `generate_comparison` loop, confirming the graph correctly re-attempts synthesis on a failed grounding check and falls through to `handle_hallucination` once `MAX_GENERATION_RETRIES` is exhausted.
+- **Extended `test_pipeline.py` coverage** — broader coverage of the end-to-end query pipeline beyond the happy path, including the retry scenario above.
+- `docs/ARCHITECTURE.md` updated to document the retry loop in the data-flow section and reflect retry cost in the latency budget table.
+
+## 4. Environment setup
+
+> Fill in if these differ from the defaults below.
+
+```powershell
+# Clone and enter the repo
+git clone https://github.com/ishaaaan17/financial-intelligence-rag.git
+cd financial-intelligence-rag
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment variables (see below)
+cp .env.example .env   # if an example file exists — otherwise create .env manually
 ```
-┌────────────┐     ┌──────────────┐     ┌───────────────────────────┐
-│ Streamlit  │────▶│   FastAPI    │────▶│  LangGraph State Machine  │
-│ frontend   │◀────│   backend    │◀────│  (graph.py / nodes.py)    │
-└────────────┘     └──────────────┘     └──────────┬────────────────┘
-                                                      │        │
-                                                      ▼        ▼
-                                         ┌────────────────┐  ┌──────────────────┐
-                                         │   pdfplumber    │  │   Qdrant Cloud    │
-                                         │   ingestion      │─▶│  (vector store)   │
-                                         │   pipeline        │  └──────────────────┘
-                                         └────────────────┘             │
-                                                      │                  ▼
-                                                      │        ┌──────────────────┐
-                                                      │        │    FlashRank      │
-                                                      │        │  cross-encoder    │
-                                                      │        └──────────────────┘
-                                                      ▼
-                                         ┌────────────────┐
-                                         │  HuggingFace    │
-                                         │  embeddings     │
-                                         │  (local, $0)    │
-                                         └────────────────┘
 
-             Inference: Groq API (llama-3.3-70b-versatile, temp=0.0)
+### Required environment variables
+
+> Names only — set actual values locally, never commit them.
+
+| Variable                                   | Purpose                               |
+| ------------------------------------------ | ------------------------------------- |
+| `GROQ_API_KEY`                             | Inference (`llama-3.3-70b-versatile`) |
+| `QDRANT_URL`                               | Qdrant Cloud endpoint                 |
+| `QDRANT_API_KEY`                           | Qdrant Cloud auth                     |
+| _(add any others used in `src/config.py`)_ |                                       |
+
+### Running locally
+
+```powershell
+# Backend
+uvicorn src.app:app --reload
+
+# Frontend
+streamlit run frontend.py
 ```
 
-## 2. Component responsibilities
+## 5. Running tests
 
-| Component     | File(s)           | Responsibility                                                                                                             |
-| ------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| API layer     | `src/app.py`      | FastAPI routes (`/health`, `/ingest`, `/query`), CORS, request/response schemas, dashboard UI                              |
-| Config        | `src/config.py`   | Pydantic Settings, `.env` loading, single source of truth for model/collection names                                       |
-| Ingestion     | `src/parser.py`   | PDF text + table extraction via `pdfplumber`, Markdown table serialization, chunking                                       |
-| Vector store  | `src/database.py` | Qdrant client wrapper, payload indexing (`ticker`, `fiscal_year`, `fiscal_period`, `type`), `query_points` filtered search |
-| Orchestration | `src/graph.py`    | Compiled LangGraph state machine, conditional edges between nodes, bounded hallucination-retry loop                        |
-| Graph nodes   | `src/nodes.py`    | Query decomposition, retrieval, reranking, relevance grading, synthesis, grounding verification, retry/backoff + logging   |
-| State schema  | `src/state.py`    | TypedDict defining the shape of state passed between graph nodes                                                           |
-| Frontend      | `frontend.py`     | Streamlit console for ingestion, querying, and citation review                                                             |
+```powershell
+pytest tests/
+```
 
-## 3. Data flow (per query)
+Key test files:
 
-1. **Decompose** — `decompose_query` node extracts `ticker`, `fiscal_year(s)`, `fiscal_period(s)`, and `metric_focus` from the natural-language query using the Groq LLM with structured JSON output.
-2. **Retrieve** — for each target period, `database.py` issues a Qdrant `query_points` call filtered on `ticker` + `fiscal_year` + `fiscal_period`, so no chunk from an unrelated quarter can leak into context.
-3. **Rerank** — retrieved chunks are reordered locally by the FlashRank cross-encoder (`ms-marco-TinyBERT-L-2-v2`) to push table content above narrative boilerplate.
-4. **Grade** — `grade_documents` checks whether every requested period was actually retrieved. Missing periods route to `handle_missing_data` instead of continuing.
-5. **Synthesize** — `generate_comparison` prompts the LLM (temperature 0.0) to produce a Markdown comparison table with absolute and percentage change.
-6. **Verify** — `verify_grounding` cross-checks every numerical claim in the generated answer against the raw retrieved context. If ungrounded and a retry attempt remains (`retry_count < MAX_GENERATION_RETRIES`), the graph loops back through `increment_retry` → `generate_comparison` for one more attempt; once the retry budget is exhausted it routes to `handle_hallucination` instead of returning the ungrounded answer.
-7. **Respond** — the API returns `answer`, `citations` (ticker/year/period/page/type per chunk used), and `hallucination_detected`.
+- `tests/test_nodes.py` — unit tests for individual graph nodes
+- `tests/test_pipeline.py` — end-to-end pipeline tests, including the retry path
 
-## 4. Latency budget (target, single query)
+## 6. Known issues / open items
 
-| Stage                                    | Target         | Notes                                                                                                                         |
-| ---------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Query decomposition                      | ~0.3–0.6s      | Groq structured JSON call                                                                                                     |
-| Vector retrieval (per period)            | ~0.1–0.3s      | Qdrant Cloud, indexed payload filters                                                                                         |
-| Reranking                                | ~0.05–0.15s    | Local cross-encoder, no network hop                                                                                           |
-| Synthesis                                | ~1–2.5s        | Groq, dominant cost for multi-hop (2+ periods)                                                                                |
-| Grounding verification                   | ~0.5–1s        | Second LLM pass over generated claims                                                                                         |
-| **End-to-end (2-period comparison)**     | **~2.5–4.5s**  | Excludes cold-start / network variance, assumes no retry needed                                                               |
-| **+ 1 hallucination retry (worst case)** | **+~1.5–3.5s** | One extra synthesis + verification pass via `increment_retry`, bounded by `MAX_GENERATION_RETRIES` (see `CONSTRAINTS.md` §11) |
+> Add anything currently outstanding here.
 
-Ingestion (`/ingest`) is not on this budget — PDF parsing and embedding of a full 10-Q/10-K typically takes several seconds to ~1 minute depending on document length and table density, and runs outside the query-time path.
+-
 
-## 5. Design rationale
+## 7. Next steps
 
-- **Local embeddings + local reranker**: keeps steady-state cost at $0 by avoiding per-query embedding API calls; only synthesis and verification go to Groq.
-- **Metadata-isolated retrieval**: filtering by `ticker`/`fiscal_year`/`fiscal_period` at the Qdrant level (not post-filtering) prevents context contamination between quarters, which is the primary source of comparison errors in naive RAG.
-- **Two-pass LLM (synthesize → verify)**: trades one extra Groq call for a hard check against hallucinated figures, which is the project's core reliability requirement.
-- **Bounded retry + explicit backoff**: a single failed grounding check retries once (`MAX_GENERATION_RETRIES`, DEC-014) before falling back to a safe refusal, and every Groq call goes through a logged retry wrapper with bounded exponential backoff on transient errors only (DEC-015) — see `CONSTRAINTS.md` §11.
+> Add remaining next steps here — the retry-path test and extended `test_pipeline.py` coverage that were previously listed are now complete (see §3).
+
+-
+
+## 8. Key references
+
+- `docs/ARCHITECTURE.md` — system topology, component responsibilities, data flow, latency budget
+- `docs/DECISIONS.md` — decision log (e.g. DEC-014 bounded retry, DEC-015 backoff wrapper)
+- `docs/CONSTRAINTS.md` — hard limits and operational rules (§11: retry/backoff constraints)
+- `docs/FLOW.md` — additional flow documentation
