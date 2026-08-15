@@ -1,36 +1,76 @@
-# Session Handover Summary
+# Architecture
 
-## Current State
+System topology, component responsibilities, and latency budgets for the SEC Financial Intelligence RAG Engine.
 
-- **Project:** Multi-Hop Financial & SEC Filing Intelligence Engine (LangGraph + Qdrant + Groq).
-- **Environment:** Dedicated virtual environment `rag` on `D:\projects\financial-intelligence-rag`.
-- **Infrastructure Status:** Connected to Qdrant Cloud cluster with local HuggingFace embedding fallback.
+## 1. Topology
 
-## Completed Modules
+```
+┌────────────┐     ┌──────────────┐     ┌───────────────────────────┐
+│ Streamlit  │────▶│   FastAPI    │────▶│  LangGraph State Machine  │
+│ frontend   │◀────│   backend    │◀────│  (graph.py / nodes.py)    │
+└────────────┘     └──────────────┘     └──────────┬────────────────┘
+                                                      │        │
+                                                      ▼        ▼
+                                         ┌────────────────┐  ┌──────────────────┐
+                                         │   pdfplumber    │  │   Qdrant Cloud    │
+                                         │   ingestion      │─▶│  (vector store)   │
+                                         │   pipeline        │  └──────────────────┘
+                                         └────────────────┘             │
+                                                      │                  ▼
+                                                      │        ┌──────────────────┐
+                                                      │        │    FlashRank      │
+                                                      │        │  cross-encoder    │
+                                                      │        └──────────────────┘
+                                                      ▼
+                                         ┌────────────────┐
+                                         │  HuggingFace    │
+                                         │  embeddings     │
+                                         │  (local, $0)    │
+                                         └────────────────┘
 
-- `docs/ARCHITECTURE.md` - Overall system and zero-dollar cloud blueprint.
-- `docs/CONSTRAINTS.md` - System guardrails (zero hallucination, metadata isolation).
-- `docs/FLOW.md` - Step-by-step query lifecycle.
-- `docs/DECISIONS.md` - Logged DEC-001 through DEC-004.
-- `requirements.txt` - Dependencies pinned and installed.
-- `src/config.py` - Pydantic settings schema for Groq & Qdrant credentials.
-- `src/parser.py` - SEC PDF parser with markdown table extraction.
-- `src/database.py` - Qdrant vector store manager with strict metadata filtering.
-- `src/state.py` - TypedDict `AgentState` schema.
-- `src/nodes.py` - Core logic nodes (`decompose_query`, `retrieve_filtered_docs`, `grade_documents`, `generate_comparison`, `verify_grounding`).
-- `src/graph.py` - Compiled `StateGraph` wiring nodes together with conditional edges (`grade_documents` → `handle_missing_data` / synthesis; `verify_grounding` → `handle_hallucination` / `END`).
-- `src/app.py` - FastAPI interface: `/health`, `/ingest`, `/query`, plus a custom root dashboard (`backend_dashboard`) with live health polling.
-- `frontend.py` - Streamlit console: sidebar ingestion form + health status, main-panel query interface with grounding verdict, Markdown answer rendering, and citation dataframe.
+             Inference: Groq API (llama-3.3-70b-versatile, temp=0.0)
+```
 
-## Design Notes Carried Forward
+## 2. Component responsibilities
 
-- Backend dashboard and Streamlit frontend now share one visual system (ink/amber, IBM Plex type) so the two surfaces read as one product — see the CSS block at the top of each file if extending either UI.
-- `LLM_TEMPERATURE=0.0` and metadata-level Qdrant filtering are treated as fixed constraints (see `CONSTRAINTS.md`), not defaults to casually change.
+| Component     | File(s)           | Responsibility                                                                                                             |
+| ------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| API layer     | `src/app.py`      | FastAPI routes (`/health`, `/ingest`, `/query`), CORS, request/response schemas, dashboard UI                              |
+| Config        | `src/config.py`   | Pydantic Settings, `.env` loading, single source of truth for model/collection names                                       |
+| Ingestion     | `src/parser.py`   | PDF text + table extraction via `pdfplumber`, Markdown table serialization, chunking                                       |
+| Vector store  | `src/database.py` | Qdrant client wrapper, payload indexing (`ticker`, `fiscal_year`, `fiscal_period`, `type`), `query_points` filtered search |
+| Orchestration | `src/graph.py`    | Compiled LangGraph state machine, conditional edges between nodes, bounded hallucination-retry loop                        |
+| Graph nodes   | `src/nodes.py`    | Query decomposition, retrieval, reranking, relevance grading, synthesis, grounding verification, retry/backoff + logging   |
+| State schema  | `src/state.py`    | TypedDict defining the shape of state passed between graph nodes                                                           |
+| Frontend      | `frontend.py`     | Streamlit console for ingestion, querying, and citation review                                                             |
 
-## Next Steps for Next Session
+## 3. Data flow (per query)
 
-1. **End-to-end ingestion test** - ingest a real sample 10-Q/10-K (e.g. `AAPL_2024_Q2.pdf`, `AAPL_2025_Q2.pdf` from `data/raw/`) and confirm `chunks_stored` and Qdrant payload indexing behave as expected on non-synthetic data.
-2. **Full query run** - execute the canonical multi-hop query end-to-end through both `/query` (Swagger) and the Streamlit console, and confirm `hallucination_detected=false` with correct citations on real filings.
-3. **Retry-path test** - deliberately trigger `handle_hallucination` (e.g. by feeding a partial/garbled chunk) to confirm the retry-then-fallback behavior in `graph.py` actually degrades safely rather than looping indefinitely.
-4. **`tests/test_pipeline.py`** - extend automated coverage to include the graph's conditional edges (missing data path, hallucination path), not just the happy path, per `CONSTRAINTS.md` §10.
-5. **CORS tightening** - before any deployment beyond local dev, replace `allow_origins=["*"]` in `app.py` with the actual frontend origin(s), per `CONSTRAINTS.md` §9.
+1. **Decompose** — `decompose_query` node extracts `ticker`, `fiscal_year(s)`, `fiscal_period(s)`, and `metric_focus` from the natural-language query using the Groq LLM with structured JSON output.
+2. **Retrieve** — for each target period, `database.py` issues a Qdrant `query_points` call filtered on `ticker` + `fiscal_year` + `fiscal_period`, so no chunk from an unrelated quarter can leak into context.
+3. **Rerank** — retrieved chunks are reordered locally by the FlashRank cross-encoder (`ms-marco-TinyBERT-L-2-v2`) to push table content above narrative boilerplate.
+4. **Grade** — `grade_documents` checks whether every requested period was actually retrieved. Missing periods route to `handle_missing_data` instead of continuing.
+5. **Synthesize** — `generate_comparison` prompts the LLM (temperature 0.0) to produce a Markdown comparison table with absolute and percentage change.
+6. **Verify** — `verify_grounding` cross-checks every numerical claim in the generated answer against the raw retrieved context. If ungrounded and a retry attempt remains (`retry_count < MAX_GENERATION_RETRIES`), the graph loops back through `increment_retry` → `generate_comparison` for one more attempt; once the retry budget is exhausted it routes to `handle_hallucination` instead of returning the ungrounded answer.
+7. **Respond** — the API returns `answer`, `citations` (ticker/year/period/page/type per chunk used), and `hallucination_detected`.
+
+## 4. Latency budget (target, single query)
+
+| Stage                                    | Target         | Notes                                                                                                                         |
+| ---------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Query decomposition                      | ~0.3–0.6s      | Groq structured JSON call                                                                                                     |
+| Vector retrieval (per period)            | ~0.1–0.3s      | Qdrant Cloud, indexed payload filters                                                                                         |
+| Reranking                                | ~0.05–0.15s    | Local cross-encoder, no network hop                                                                                           |
+| Synthesis                                | ~1–2.5s        | Groq, dominant cost for multi-hop (2+ periods)                                                                                |
+| Grounding verification                   | ~0.5–1s        | Second LLM pass over generated claims                                                                                         |
+| **End-to-end (2-period comparison)**     | **~2.5–4.5s**  | Excludes cold-start / network variance, assumes no retry needed                                                               |
+| **+ 1 hallucination retry (worst case)** | **+~1.5–3.5s** | One extra synthesis + verification pass via `increment_retry`, bounded by `MAX_GENERATION_RETRIES` (see `CONSTRAINTS.md` §11) |
+
+Ingestion (`/ingest`) is not on this budget — PDF parsing and embedding of a full 10-Q/10-K typically takes several seconds to ~1 minute depending on document length and table density, and runs outside the query-time path.
+
+## 5. Design rationale
+
+- **Local embeddings + local reranker**: keeps steady-state cost at $0 by avoiding per-query embedding API calls; only synthesis and verification go to Groq.
+- **Metadata-isolated retrieval**: filtering by `ticker`/`fiscal_year`/`fiscal_period` at the Qdrant level (not post-filtering) prevents context contamination between quarters, which is the primary source of comparison errors in naive RAG.
+- **Two-pass LLM (synthesize → verify)**: trades one extra Groq call for a hard check against hallucinated figures, which is the project's core reliability requirement.
+- **Bounded retry + explicit backoff**: a single failed grounding check retries once (`MAX_GENERATION_RETRIES`, DEC-014) before falling back to a safe refusal, and every Groq call goes through a logged retry wrapper with bounded exponential backoff on transient errors only (DEC-015) — see `CONSTRAINTS.md` §11.

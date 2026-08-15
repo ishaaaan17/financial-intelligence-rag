@@ -22,9 +22,9 @@ Step-by-step walkthrough of a single request through the system, for both the in
 1. **Request in** — client sends `{"query": "..."}`. `app.py` builds the initial `GraphState` (all fields empty/false/zero) and invokes `financial_rag_app`.
 
 2. **`decompose_query` node**
-   - Sends the raw query to Groq with a structured JSON schema.
+   - Sends the raw query to Groq (via `_invoke_chain`, which applies a bounded timeout and retry-with-backoff on transient errors — see `CONSTRAINTS.md` §11) with a structured JSON schema.
    - Extracts `ticker`, one or more `(fiscal_year, fiscal_period)` targets, and `metric_focus`.
-   - Example: *"Compare Apple's R&D spend between Q2 2024 and Q2 2025"* → `ticker=AAPL`, `target_periods=[(2024,Q2),(2025,Q2)]`, `metric_focus="R&D spend"`.
+   - Example: _"Compare Apple's R&D spend between Q2 2024 and Q2 2025"_ → `ticker=AAPL`, `target_periods=[(2024,Q2),(2025,Q2)]`, `metric_focus="R&D spend"`.
 
 3. **Retrieval**
    - For each target period, query Qdrant with a payload filter on `ticker` + `fiscal_year` + `fiscal_period`.
@@ -45,9 +45,10 @@ Step-by-step walkthrough of a single request through the system, for both the in
 
 7. **`verify_grounding` node** (conditional edge)
    - Every numeric claim in the generated answer is checked against the raw retrieved chunk text.
-   - If any claim can't be matched → `hallucination_detected=True`, route to **`handle_hallucination`**.
-     - `handle_hallucination` increments `retry_count`. If under the retry limit, it loops back to `generate_comparison` with stricter instructions; otherwise it returns a safe fallback response rather than the ungrounded answer.
    - If all claims are grounded → `hallucination_detected=False` → `END`.
+   - If any claim can't be matched → `hallucination_detected=True` → `route_after_verification` checks `retry_count` against `MAX_GENERATION_RETRIES` (currently `1`, i.e. 2 total generation attempts):
+     - **Retry budget remaining** → route to **`increment_retry`**, which bumps `retry_count` and loops back to `generate_comparison` for another attempt (same prompt, freshly regenerated — not a modified "stricter" prompt).
+     - **Retry budget exhausted** → route to **`handle_hallucination`**, which returns a safe fallback response (reporting how many attempts were made) rather than the ungrounded answer, and the graph ends.
 
 8. **Response out**
    - `app.py` reads `final_output` from the completed graph state and returns `QueryResponse`: `query`, `ticker`, `answer`, `citations`, `hallucination_detected`.

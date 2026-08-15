@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     llm_model: str = Field(default="llama-3.3-70b-versatile")
     llm_temperature: float = Field(default=0.0)
 
+    # DEC-014: bounded timeout + retry budget for Groq calls. The langchain-groq
+    # client's own max_retries is set to 0 (see nodes.py) so that all retry/backoff
+    # behavior is handled explicitly and logged, rather than retried silently inside
+    # the client with no visibility.
+    llm_timeout_seconds: float = Field(default=30.0, alias="LLM_TIMEOUT_SECONDS")
+    llm_max_retries: int = Field(default=3, alias="LLM_MAX_RETRIES")
+
     # Vector Database Settings
     qdrant_url: str = Field(default="", alias="QDRANT_URL")
     qdrant_api_key: str = Field(default="", alias="QDRANT_API_KEY")

@@ -72,8 +72,20 @@
 - **Decision:** Use Streamlit (`frontend.py`) talking to the FastAPI backend over plain HTTP (`httpx`), rather than a React/Next.js frontend.
 - **Why:** Streamlit lets the ingestion form, query box, and citation table be built and iterated in pure Python, matching the project's Python-only stack and small-team/internal-tool scope. Explicitly revisit this if the tool needs to be exposed to external, non-technical users at scale — Streamlit's session model and auth story are not built for that.
 
-## DEC-013: Wildcard CORS Restricted to Local Development
+## DEC-013: Wildcard CORS Restricted to Local Development [RESOLVED]
 
-- **Context:** `app.py` currently sets `allow_origins=["*"]` so the Streamlit frontend (and Swagger UI) can call the API freely during development.
-- **Decision:** Accept the wildcard for now, but treat it as explicitly temporary — see `CONSTRAINTS.md` §9.
-- **Why:** Recorded here specifically so it isn't mistaken for a considered production choice later. Any deployment beyond `localhost` must replace this with an explicit origin allowlist before shipping; this entry exists to make that a tracked decision, not a forgotten default.
+- **Context:** `app.py` originally set `allow_origins=["*"]` so the Streamlit frontend (and Swagger UI) could call the API freely during development.
+- **Decision:** Replaced the wildcard with `settings.allowed_origins`, a parsed allowlist driven by the `ALLOWED_ORIGINS` env var (see `config.py`), defaulting to the local Streamlit + Swagger dev origins.
+- **Why:** Recorded here specifically so the wildcard isn't mistaken for a considered production choice. This entry is now resolved in code — see `CONSTRAINTS.md` §9 for the deployment guardrail this satisfies. Any non-local deployment still needs its actual frontend origin(s) set via `ALLOWED_ORIGINS`.
+
+## DEC-014: Bounded Retry Loop for Hallucination Recovery
+
+- **Context:** `AgentState` has always carried a `retry_count` field, and earlier docs (`FLOW.md`, `HANDOVER.md`) described `handle_hallucination` as retrying `generate_comparison` before giving up — but the graph never actually implemented this; `handle_hallucination` returned a static fallback and routed straight to `END`, and `retry_count` was never read or incremented.
+- **Decision:** Implement the real bounded retry: `route_after_verification` checks `retry_count` against `MAX_GENERATION_RETRIES` (currently `1`, i.e. 2 total generation attempts). If budget remains, route to a new `increment_retry` node that bumps the counter and loops back to `generate_comparison`; once exhausted, route to `handle_hallucination`, which now reports the actual number of attempts made.
+- **Why:** A single failed grounding check can be a one-off (borderline phrasing, a marginal figure) rather than a structural problem with the retrieved context — retrying once cheaply recovers those cases instead of immediately surfacing a refusal. The retry is still hard-bounded to avoid the infinite-loop risk `DEC-004` was already designed to prevent; `MAX_GENERATION_RETRIES` is a small, explicit module-level constant in `graph.py`, not a magic number buried in the routing function.
+
+## DEC-015: Explicit Bounded Backoff for Groq Calls, Structured Per-Node Logging
+
+- **Context:** `nodes.py` called `chain.invoke(...)` directly with no timeout and no retry handling. A transient Groq error (connection blip, rate limit, 5xx) threw an unhandled exception straight up through the graph, and there was no logging anywhere in `nodes.py`/`graph.py` to diagnose a failure or a hallucination-triggered retry after the fact.
+- **Decision:** Add `timeout=settings.llm_timeout_seconds` to the `ChatGroq` client and set its own `max_retries=0`, so retry behavior is handled entirely by an explicit wrapper (`_invoke_chain` in `nodes.py`) using `tenacity` with exponential backoff, bounded by `settings.llm_max_retries`, and retrying only genuinely transient errors (`APIConnectionError`, `APITimeoutError`, `RateLimitError`, `InternalServerError`) — not auth/validation/bad-request errors, which no amount of retrying fixes. Every node is also wrapped with a `log_node` decorator emitting structured start/end/error logs (node name, ticker, retry_count, duration, status).
+- **Why:** Disabling the client's own silent retries and routing everything through one logged wrapper means every retry attempt is visible in logs rather than happening invisibly inside the Groq client. Restricting retries to transient error types avoids wasting the retry budget (and adding latency) on errors a retry can't fix. Per-node logging gives operators a way to see which node failed, how long it took, and how many hallucination-retry cycles a given query went through — none of which was observable before.

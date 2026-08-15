@@ -3,25 +3,123 @@ LangGraph execution nodes for the Financial RAG pipeline.
 Includes query planning, filtered retrieval, FlashRank reranking, relevance grading, comparison synthesis, and grounding verification.
 """
 
-from typing import List, Dict, Any
+import functools
+import logging
+import time
+from typing import List, Dict, Any, Callable
+
+from groq import (
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+    RateLimitError,
+)
 from pydantic import BaseModel, Field
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
 from flashrank import Ranker, RerankRequest
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+    before_sleep_log,
+)
 
 from src.config import settings
 from src.state import AgentState
 from src.database import VectorStoreManager
 
+logger = logging.getLogger("financial_rag.nodes")
+
 # Initialize LLM and Vector Store
+# max_retries=0: the langchain-groq/groq client's built-in retry is disabled here
+# so that all retry/backoff behavior goes through the explicit, logged wrapper below
+# (_invoke_chain) instead of retrying silently with no visibility.
 llm = ChatGroq(
     model=settings.llm_model,
     api_key=settings.groq_api_key,
-    temperature=settings.llm_temperature
+    temperature=settings.llm_temperature,
+    timeout=settings.llm_timeout_seconds,
+    max_retries=0,
 )
 vector_store = VectorStoreManager()
 ranker = Ranker(model_name="ms-marco-TinyBERT-L-2-v2", cache_dir="/tmp/flashrank")
+
+
+# Retryable Groq call wrapper
+# Only transient/network-ish failures are retried. Non-transient errors (bad request,
+# auth, permission, not found, validation) are intentionally NOT retried since a retry
+# cannot fix them and would just waste the retry budget and add latency.
+_RETRYABLE_GROQ_ERRORS = (
+    APIConnectionError,
+    APITimeoutError,
+    RateLimitError,
+    InternalServerError,
+)
+
+
+def _build_groq_retry():
+    return retry(
+        stop=stop_after_attempt(settings.llm_max_retries),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type(_RETRYABLE_GROQ_ERRORS),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+        reraise=True,
+    )
+
+
+def _invoke_chain(chain, payload: Dict[str, Any]):
+    """
+    Invokes an LCEL chain (prompt | llm) with bounded retries and exponential
+    backoff on transient Groq errors (connection issues, timeouts, rate limits,
+    5xx). Non-transient errors propagate immediately without retrying.
+    """
+    groq_retry = _build_groq_retry()
+    return groq_retry(chain.invoke)(payload)
+
+
+# Structured per-node logging decorator
+def log_node(node_name: str) -> Callable:
+    """
+    Wraps a graph node function with structured start/end/error logging.
+    Logs node name, ticker, and retry_count on entry; duration and status on exit.
+    """
+    def decorator(fn: Callable) -> Callable:
+        @functools.wraps(fn)
+        def wrapper(state: AgentState) -> Dict[str, Any]:
+            start = time.monotonic()
+            logger.info(
+                "node_start",
+                extra={
+                    "node": node_name,
+                    "ticker": state.get("ticker"),
+                    "retry_count": state.get("retry_count", 0),
+                },
+            )
+            try:
+                result = fn(state)
+                logger.info(
+                    "node_end",
+                    extra={
+                        "node": node_name,
+                        "status": "ok",
+                        "duration_ms": round((time.monotonic() - start) * 1000, 1),
+                    },
+                )
+                return result
+            except Exception:
+                logger.exception(
+                    "node_error",
+                    extra={
+                        "node": node_name,
+                        "duration_ms": round((time.monotonic() - start) * 1000, 1),
+                    },
+                )
+                raise
+        return wrapper
+    return decorator
 
 
 # Pydantic Schemas for Structured LLM Outputs
@@ -42,6 +140,7 @@ class GroundingVerification(BaseModel):
 
 
 # Node 1: Decompose User Query
+@log_node("decompose_query")
 def decompose_query(state: AgentState) -> Dict[str, Any]:
     structured_llm = llm.with_structured_output(QueryPlan)
     prompt = ChatPromptTemplate.from_messages([
@@ -49,7 +148,7 @@ def decompose_query(state: AgentState) -> Dict[str, Any]:
         ("human", "{query}")
     ])
     chain = prompt | structured_llm
-    result: QueryPlan = chain.invoke({"query": state["original_query"]})
+    result: QueryPlan = _invoke_chain(chain, {"query": state["original_query"]})
 
     target_periods = []
     if len(result.years) == len(result.quarters):
@@ -74,6 +173,7 @@ def decompose_query(state: AgentState) -> Dict[str, Any]:
 
 
 # Node 2: Retrieve Documents & Apply FlashRank Reranking
+@log_node("retrieve_filtered_docs")
 def retrieve_filtered_docs(state: AgentState) -> Dict[str, Any]:
     ticker = state["ticker"]
     metric = state["metric_focus"]
@@ -113,6 +213,7 @@ def retrieve_filtered_docs(state: AgentState) -> Dict[str, Any]:
 
 
 # Node 3: Grade Relevance
+@log_node("grade_documents")
 def grade_documents(state: AgentState) -> Dict[str, Any]:
     if state["missing_periods"] or not state["retrieved_docs"]:
         return {"documents_are_relevant": False}
@@ -125,12 +226,13 @@ def grade_documents(state: AgentState) -> Dict[str, Any]:
     chain = prompt | structured_llm
 
     sample_context = "\n---\n".join([d.page_content[:400] for d in state["retrieved_docs"][:3]])
-    grade: RelevanceGrade = chain.invoke({"metric": state["metric_focus"], "context": sample_context})
+    grade: RelevanceGrade = _invoke_chain(chain, {"metric": state["metric_focus"], "context": sample_context})
 
     return {"documents_are_relevant": grade.is_relevant}
 
 
 # Node 4: Generate Multi-Hop Comparison Table
+@log_node("generate_comparison")
 def generate_comparison(state: AgentState) -> Dict[str, Any]:
     context_chunks = []
     citations = []
@@ -159,7 +261,7 @@ def generate_comparison(state: AgentState) -> Dict[str, Any]:
     ])
 
     chain = prompt | llm
-    response = chain.invoke({"query": state["original_query"], "context": context_str})
+    response = _invoke_chain(chain, {"query": state["original_query"], "context": context_str})
 
     return {
         "final_answer": response.content,
@@ -168,6 +270,7 @@ def generate_comparison(state: AgentState) -> Dict[str, Any]:
 
 
 # Node 5: Verify Grounding (Anti-Hallucination)
+@log_node("verify_grounding")
 def verify_grounding(state: AgentState) -> Dict[str, Any]:
     structured_llm = llm.with_structured_output(GroundingVerification)
     context_str = "\n".join([d.page_content for d in state["retrieved_docs"]])
@@ -178,7 +281,7 @@ def verify_grounding(state: AgentState) -> Dict[str, Any]:
     ])
 
     chain = prompt | structured_llm
-    verification: GroundingVerification = chain.invoke({
+    verification: GroundingVerification = _invoke_chain(chain, {
         "context": context_str,
         "answer": state.get("final_answer", "")
     })

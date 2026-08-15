@@ -43,8 +43,14 @@ Non-negotiable technical guardrails for this project. Changes to any of these re
 
 ## 9. CORS
 
-- `allow_origins=["*"]` is acceptable for local development only. Before any non-local deployment, this must be restricted to known frontend origins — do not ship the wildcard to production.
+- Origins are driven by `settings.allowed_origins` (`ALLOWED_ORIGINS` env var, see `config.py` and `DECISIONS.md` DEC-013) — never hardcode `allow_origins=["*"]` in `app.py` again. The wildcard is acceptable only as a _local_ fallback default value, not as a value ever shipped to a non-local deployment; any non-local deployment must set `ALLOWED_ORIGINS` explicitly to its real frontend origin(s).
 
 ## 10. Testing
 
-- Any change to `nodes.py` (query decomposition, grading, grounding verification) must be covered by `tests/test_pipeline.py` and pass in CI (`.github/workflows/ci.yml`) before merge — these nodes are where hallucination and contamination bugs actually originate.
+- Any change to `nodes.py` (query decomposition, grading, synthesis, grounding verification) must be covered by `tests/test_nodes.py` (node-level, mocked LLM/vector store) and, where it affects the `/query` response shape or a graph branch, `tests/test_pipeline.py` (API-level). Both must pass in CI (`.github/workflows/ci.yml`) before merge — these nodes are where hallucination and contamination bugs actually originate.
+- Any change to the routing/retry logic in `graph.py` (`route_after_grading`, `route_after_verification`, `increment_retry`, `handle_missing_data`, `handle_hallucination`) must have a corresponding test in `tests/test_nodes.py`, since these functions are pure (state in, route/dict out) and cheap to test directly without mocking the LLM at all.
+
+## 11. Bounded retries — no unbounded loops, no silent retries
+
+- `MAX_GENERATION_RETRIES` in `graph.py` bounds the hallucination-recovery loop (`verify_grounding` → `increment_retry` → `generate_comparison`). Any change to this limit is a `DECISIONS.md`-worthy decision (see DEC-014), not a casual tweak — an unbounded or too-generous retry loop both risks infinite execution and burns Groq calls on a query that isn't going to ground out.
+- Groq calls **must** go through `nodes.py`'s `_invoke_chain` wrapper, not a raw `chain.invoke(...)`. Retries there are bounded by `settings.llm_max_retries` and restricted to transient errors (`APIConnectionError`, `APITimeoutError`, `RateLimitError`, `InternalServerError`); the `ChatGroq` client's own `max_retries` must stay `0` so retry behavior isn't split between two invisible layers (see DEC-015).
