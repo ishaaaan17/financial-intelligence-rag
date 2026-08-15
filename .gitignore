@@ -1,0 +1,22 @@
+# Python environment & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.env
+.venv/
+env/
+venv/
+
+# Data & local vector DB storage
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+qdrant_storage/
+chroma_db/
+
+# IDE files
+.vscode/
+.idea/
+.DS_Store
