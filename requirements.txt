@@ -1,0 +1,22 @@
+# Agent & Orchestration
+langgraph>=0.2.0
+langchain-core>=0.3.0
+langchain-groq>=0.2.0
+langchain-community>=0.3.0
+
+# Embeddings & Vector Store
+sentence-transformers>=3.0.0
+langchain-huggingface>=0.1.0
+qdrant-client>=1.11.0
+langchain-qdrant>=0.1.4
+
+# Document & Table Extraction
+pdfplumber>=0.11.0
+pypdf>=4.3.0
+
+# API & Environment
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-dotenv>=1.0.1
+pydantic>=2.8.0
+pydantic-settings>=2.4.0
