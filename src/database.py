@@ -1,10 +1,11 @@
 """
 Vector database module using Qdrant and local HuggingFace embeddings.
-Handles vector collection initialization, document ingestion, and filtered searches.
+Handles vector collection initialization, payload indexing, document ingestion, and filtered searches.
 """
 
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+import uuid
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -33,13 +34,12 @@ class VectorStoreManager:
             self.client = QdrantClient(path=str(local_storage_path))
 
         self.collection_name = settings.collection_name
-        self._ensure_collection_exists()
+        self._ensure_collection_and_indexes()
 
-    def _ensure_collection_exists(self):
-        """Creates the Qdrant collection if it does not already exist."""
+    def _ensure_collection_and_indexes(self):
+        """Creates the collection and ensures payload indexes exist for metadata filtering."""
         collections = [c.name for c in self.client.get_collections().collections]
         if self.collection_name not in collections:
-            # all-MiniLM-L6-v2 produces 384-dimensional vectors
             self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=rest.VectorParams(
@@ -47,6 +47,25 @@ class VectorStoreManager:
                     distance=rest.Distance.COSINE
                 )
             )
+
+        # Create payload indexes required by Qdrant for filtering
+        indexes_to_create = [
+            ("ticker", rest.PayloadSchemaType.KEYWORD),
+            ("fiscal_period", rest.PayloadSchemaType.KEYWORD),
+            ("type", rest.PayloadSchemaType.KEYWORD),
+            ("fiscal_year", rest.PayloadSchemaType.INTEGER),
+        ]
+
+        for field_name, field_schema in indexes_to_create:
+            try:
+                self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name=field_name,
+                    field_schema=field_schema
+                )
+            except Exception:
+                # Index may already exist
+                pass
 
     def insert_chunks(self, chunks: List[DocumentChunk]):
         """Embeds and inserts structured document chunks into Qdrant."""
@@ -61,7 +80,6 @@ class VectorStoreManager:
 
         # Prepare Qdrant points
         points = []
-        import uuid
         for i, (text, vector, meta) in enumerate(zip(texts, vectors, metadatas)):
             payload = {**meta, "page_content": text}
             points.append(
@@ -109,15 +127,24 @@ class VectorStoreManager:
 
         query_filter = rest.Filter(must=conditions)
 
-        search_result = self.client.search(
-            collection_name=self.collection_name,
-            query_vector=query_vector,
-            query_filter=query_filter,
-            limit=limit
-        )
+        if hasattr(self.client, "query_points"):
+            response = self.client.query_points(
+                collection_name=self.collection_name,
+                query=query_vector,
+                query_filter=query_filter,
+                limit=limit
+            )
+            points = response.points
+        else:
+            points = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=query_vector,
+                query_filter=query_filter,
+                limit=limit
+            )
 
         documents = []
-        for hit in search_result:
+        for hit in points:
             content = hit.payload.get("page_content", "")
             meta = {k: v for k, v in hit.payload.items() if k != "page_content"}
             documents.append(Document(page_content=content, metadata=meta))

@@ -1,61 +1,68 @@
 """
-Node implementations for LangGraph Financial RAG.
-Contains pure functions that read from AgentState and return state updates.
+LangGraph execution nodes for the Financial RAG pipeline.
+Includes query planning, filtered retrieval, FlashRank reranking, relevance grading, comparison synthesis, and grounding verification.
 """
 
-from typing import Dict, Any, List
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.documents import Document
+from flashrank import Ranker, RerankRequest
+
 from src.config import settings
 from src.state import AgentState
 from src.database import VectorStoreManager
 
-# 1. Initialize LLM & Vector Store
+# Initialize LLM and Vector Store
 llm = ChatGroq(
     model=settings.llm_model,
-    temperature=settings.llm_temperature,
-    groq_api_key=settings.groq_api_key
+    api_key=settings.groq_api_key,
+    temperature=settings.llm_temperature
 )
 vector_store = VectorStoreManager()
+ranker = Ranker(model_name="ms-marco-TinyBERT-L-2-v2", cache_dir="/tmp/flashrank")
 
 
-# 2. Pydantic Schemas for Structured LLM Outputs
+# Pydantic Schemas for Structured LLM Outputs
 class QueryPlan(BaseModel):
-    ticker: str = Field(description="Stock ticker symbol in uppercase, e.g. AAPL")
-    metric_focus: str = Field(description="The primary financial metric requested, e.g. R&D spend, Gross Margin")
-    years: List[int] = Field(description="List of fiscal years mentioned, e.g. [2024, 2025]")
-    quarters: List[str] = Field(description="List of quarters mentioned in uppercase, e.g. ['Q2', 'Q2'] or ['FY']")
+    ticker: str = Field(description="The primary stock ticker symbol in uppercase, e.g., 'AAPL', 'MSFT'")
+    years: List[int] = Field(description="Target fiscal years mentioned in the query, e.g., [2024, 2025]")
+    quarters: List[str] = Field(description="Target fiscal quarters mentioned, e.g., ['Q2', 'Q2']")
+    metric_focus: str = Field(description="The core financial metric to compare, e.g., 'Research and development expense'")
 
 
 class RelevanceGrade(BaseModel):
-    is_relevant: bool = Field(description="True if context contains numbers relevant to the metric, False otherwise")
-    feedback: str = Field(description="Brief reason for grading decision")
+    is_relevant: bool = Field(description="True if the text contains financial figures relevant to the query metric.")
 
 
-class VerificationGrade(BaseModel):
-    is_grounded: bool = Field(description="True if all numbers in generation exist in source context, False if hallucinated")
+class GroundingVerification(BaseModel):
+    is_grounded: bool = Field(description="True if every number/statistic in the answer exists in the source text.")
+    explanation: str = Field(description="Brief reason for verification decision.")
 
 
-# 3. Node Functions
-
+# Node 1: Decompose User Query
 def decompose_query(state: AgentState) -> Dict[str, Any]:
-    """Extracts ticker, periods, and metrics from the raw user query."""
     structured_llm = llm.with_structured_output(QueryPlan)
-
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are an expert financial analyst. Extract structured query parameters from the user prompt."),
         ("human", "{query}")
     ])
-
     chain = prompt | structured_llm
     result: QueryPlan = chain.invoke({"query": state["original_query"]})
 
-    # Assemble structured periods
     target_periods = []
-    for y in result.years:
-        for q in result.quarters:
-            target_periods.append({"year": y, "quarter": q.upper()})
+    if len(result.years) == len(result.quarters):
+        for y, q in zip(result.years, result.quarters):
+            p = {"year": int(y), "quarter": q.upper()}
+            if p not in target_periods:
+                target_periods.append(p)
+    else:
+        for y in result.years:
+            for q in result.quarters:
+                p = {"year": int(y), "quarter": q.upper()}
+                if p not in target_periods:
+                    target_periods.append(p)
 
     return {
         "ticker": result.ticker.upper(),
@@ -66,79 +73,93 @@ def decompose_query(state: AgentState) -> Dict[str, Any]:
     }
 
 
+# Node 2: Retrieve Documents & Apply FlashRank Reranking
 def retrieve_filtered_docs(state: AgentState) -> Dict[str, Any]:
-    """Retrieves document chunks using exact metadata filters for each target period."""
-    all_docs = []
-    missing_periods = []
+    ticker = state["ticker"]
+    metric = state["metric_focus"]
+    all_docs: List[Document] = []
+    missing = []
 
     for period in state["target_periods"]:
+        year = period["year"]
+        quarter = period["quarter"]
+
         docs = vector_store.search_filtered(
-            query=state["metric_focus"],
-            ticker=state["ticker"],
-            fiscal_year=period["year"],
-            fiscal_period=period["quarter"],
-            limit=3
+            query=metric,
+            ticker=ticker,
+            fiscal_year=year,
+            fiscal_period=quarter,
+            limit=5
         )
-        if docs:
-            all_docs.extend(docs)
+
+        if not docs:
+            missing.append(period)
         else:
-            missing_periods.append(period)
+            # Re-rank retrieved passages using FlashRank Cross-Encoder
+            passages = [{"id": i, "text": d.page_content, "meta": d.metadata} for i, d in enumerate(docs)]
+            rerank_request = RerankRequest(query=metric, passages=passages)
+            ranked_passages = ranker.rerank(rerank_request)
+
+            top_docs = [
+                Document(page_content=p["text"], metadata=p["meta"])
+                for p in ranked_passages[:3]
+            ]
+            all_docs.extend(top_docs)
 
     return {
         "retrieved_docs": all_docs,
-        "missing_periods": missing_periods
+        "missing_periods": missing
     }
 
 
+# Node 3: Grade Relevance
 def grade_documents(state: AgentState) -> Dict[str, Any]:
-    """Evaluates whether retrieved documents provide enough data to answer the query."""
-    if not state["retrieved_docs"]:
+    if state["missing_periods"] or not state["retrieved_docs"]:
         return {"documents_are_relevant": False}
-
-    combined_context = "\n\n".join([d.page_content for d in state["retrieved_docs"]])
 
     structured_llm = llm.with_structured_output(RelevanceGrade)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Check if the context contains numerical or factual data regarding '{metric}' for {ticker}."),
-        ("human", "Context:\n{context}\n\nMetric: {metric}")
+        ("system", "Grade if the provided context contains data to answer the metric query: '{metric}'."),
+        ("human", "Context:\n{context}")
     ])
-
     chain = prompt | structured_llm
-    result: RelevanceGrade = chain.invoke({
-        "ticker": state["ticker"],
-        "metric": state["metric_focus"],
-        "context": combined_context
-    })
 
-    return {"documents_are_relevant": result.is_relevant}
+    sample_context = "\n---\n".join([d.page_content[:400] for d in state["retrieved_docs"][:3]])
+    grade: RelevanceGrade = chain.invoke({"metric": state["metric_focus"], "context": sample_context})
+
+    return {"documents_are_relevant": grade.is_relevant}
 
 
+# Node 4: Generate Multi-Hop Comparison Table
 def generate_comparison(state: AgentState) -> Dict[str, Any]:
-    """Synthesizes the financial comparison based strictly on retrieved documents."""
-    combined_context = "\n\n".join([
-        f"[{d.metadata.get('fiscal_period')} {d.metadata.get('fiscal_year')}]:\n{d.page_content}"
-        for d in state["retrieved_docs"]
-    ])
+    context_chunks = []
+    citations = []
+
+    for d in state["retrieved_docs"]:
+        context_chunks.append(f"[{d.metadata.get('fiscal_period')} {d.metadata.get('fiscal_year')}]:\n{d.page_content}")
+        meta = {
+            "ticker": d.metadata.get("ticker"),
+            "fiscal_year": d.metadata.get("fiscal_year"),
+            "fiscal_period": d.metadata.get("fiscal_period"),
+            "page": d.metadata.get("page"),
+            "type": d.metadata.get("type")
+        }
+        if meta not in citations:
+            citations.append(meta)
+
+    context_str = "\n\n".join(context_chunks)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", (
-            "You are a strict quantitative financial analyst. Compare the requested metrics across periods.\n"
-            "Rules:\n"
-            "1. Output a clear Markdown comparison table.\n"
-            "2. Calculate absolute change ($) and percentage change (%).\n"
-            "3. Cite exact sources and footnotes.\n"
-            "4. NEVER guess or extrapolate numbers not present in context."
+            "You are a strict SEC financial analyst. Build a clean markdown table comparing the metric across "
+            "the requested periods. Include calculated YoY absolute change and percentage change. "
+            "ONLY use exact figures present in the context. Never fabricate data."
         )),
-        ("human", "User Question: {query}\n\nRetrieved Filings Context:\n{context}")
+        ("human", "User Query: {query}\n\nRetrieved SEC Context:\n{context}")
     ])
 
     chain = prompt | llm
-    response = chain.invoke({
-        "query": state["original_query"],
-        "context": combined_context
-    })
-
-    citations = [d.metadata for d in state["retrieved_docs"]]
+    response = chain.invoke({"query": state["original_query"], "context": context_str})
 
     return {
         "final_answer": response.content,
@@ -146,23 +167,22 @@ def generate_comparison(state: AgentState) -> Dict[str, Any]:
     }
 
 
+# Node 5: Verify Grounding (Anti-Hallucination)
 def verify_grounding(state: AgentState) -> Dict[str, Any]:
-    """Checks if the generated output has any hallucinations against source context."""
-    if not state.get("final_answer"):
-        return {"hallucination_detected": True}
+    structured_llm = llm.with_structured_output(GroundingVerification)
+    context_str = "\n".join([d.page_content for d in state["retrieved_docs"]])
 
-    combined_context = "\n\n".join([d.page_content for d in state["retrieved_docs"]])
-
-    structured_llm = llm.with_structured_output(VerificationGrade)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Verify that EVERY numerical claim in the answer is directly supported by the context. Score is_grounded as False if any number is made up."),
-        ("human", "Context:\n{context}\n\nAnswer to Verify:\n{answer}")
+        ("system", "Verify that all facts and numbers in the answer are strictly supported by the raw context."),
+        ("human", "Raw Context:\n{context}\n\nGenerated Answer:\n{answer}")
     ])
 
     chain = prompt | structured_llm
-    result: VerificationGrade = chain.invoke({
-        "context": combined_context,
-        "answer": state["final_answer"]
+    verification: GroundingVerification = chain.invoke({
+        "context": context_str,
+        "answer": state.get("final_answer", "")
     })
 
-    return {"hallucination_detected": not result.is_grounded}
+    return {
+        "hallucination_detected": not verification.is_grounded
+    }

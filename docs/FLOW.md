@@ -1,0 +1,61 @@
+# Query Lifecycle
+
+Step-by-step walkthrough of a single request through the system, for both the ingestion path and the query path.
+
+## A. Ingestion flow (`POST /ingest`)
+
+1. **Upload** — client (Streamlit or Swagger) sends `multipart/form-data`: `ticker`, `fiscal_year`, `fiscal_period`, `file` (PDF).
+2. **Validate extension** — `app.py` rejects anything not ending in `.pdf` with `400`.
+3. **Stage to disk** — the upload is streamed to a `NamedTemporaryFile` so `pdfplumber` can read it by path.
+4. **Parse** — `SECParser(ticker, fiscal_year, fiscal_period).parse_pdf(tmp_path)`:
+   - Walks each page of the PDF.
+   - Extracts narrative text and detected tables separately.
+   - Serializes tables into Markdown, preserving column order.
+   - Produces a list of tagged chunks (each carrying `ticker`/`fiscal_year`/`fiscal_period`/`type`/`page`).
+5. **Guard against empty extraction** — if no chunks were produced (e.g., a scanned/image-only PDF), return `400` rather than silently storing nothing.
+6. **Embed + upsert** — `vector_store.insert_chunks(chunks)` embeds each chunk locally (`all-MiniLM-L6-v2`) and upserts into the Qdrant collection with payload indexing on `ticker`, `fiscal_year`, `fiscal_period`, `type`.
+7. **Cleanup** — the temp file is deleted in a `finally` block regardless of success or failure.
+8. **Respond** — `IngestResponse` with `chunks_stored` count.
+
+## B. Query flow (`POST /query`)
+
+1. **Request in** — client sends `{"query": "..."}`. `app.py` builds the initial `GraphState` (all fields empty/false/zero) and invokes `financial_rag_app`.
+
+2. **`decompose_query` node**
+   - Sends the raw query to Groq with a structured JSON schema.
+   - Extracts `ticker`, one or more `(fiscal_year, fiscal_period)` targets, and `metric_focus`.
+   - Example: *"Compare Apple's R&D spend between Q2 2024 and Q2 2025"* → `ticker=AAPL`, `target_periods=[(2024,Q2),(2025,Q2)]`, `metric_focus="R&D spend"`.
+
+3. **Retrieval**
+   - For each target period, query Qdrant with a payload filter on `ticker` + `fiscal_year` + `fiscal_period`.
+   - If the collection is empty for a given filter combination, that period is added to `missing_periods` instead of erroring.
+
+4. **`grade_documents` node** (conditional edge)
+   - If `missing_periods` is non-empty → route to **`handle_missing_data`** → structured "we don't have this filing" response → `END`.
+   - If retrieved chunks don't actually address `metric_focus` → same missing/irrelevant path.
+   - Otherwise → continue to reranking/synthesis.
+
+5. **Reranking**
+   - FlashRank cross-encoder scores each chunk against the original query.
+   - Chunks are reordered so the highest-relevance tables are placed first in the synthesis context (most SEC filings are mostly narrative disclosure, so this step matters more than in typical prose RAG).
+
+6. **`generate_comparison` node**
+   - Groq (temperature 0.0) synthesizes a Markdown answer: a comparison table with absolute and percentage change, plus brief prose framing.
+   - Citations are attached per fact, referencing the source chunk's `ticker`/`fiscal_year`/`fiscal_period`/`page`/`type`.
+
+7. **`verify_grounding` node** (conditional edge)
+   - Every numeric claim in the generated answer is checked against the raw retrieved chunk text.
+   - If any claim can't be matched → `hallucination_detected=True`, route to **`handle_hallucination`**.
+     - `handle_hallucination` increments `retry_count`. If under the retry limit, it loops back to `generate_comparison` with stricter instructions; otherwise it returns a safe fallback response rather than the ungrounded answer.
+   - If all claims are grounded → `hallucination_detected=False` → `END`.
+
+8. **Response out**
+   - `app.py` reads `final_output` from the completed graph state and returns `QueryResponse`: `query`, `ticker`, `answer`, `citations`, `hallucination_detected`.
+
+## C. Frontend consumption
+
+- **Sidebar**: polls `/health` on page load to show backend status, active model, and collection name; renders the ingestion form and calls `/ingest`.
+- **Main panel**: takes the query text, calls `/query`, then:
+  - Renders a verdict banner from `hallucination_detected`.
+  - Renders `answer` as Markdown (so the comparison table displays natively).
+  - Renders `citations` as a dataframe inside a collapsed expander for provenance review.

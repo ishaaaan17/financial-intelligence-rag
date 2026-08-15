@@ -1,0 +1,31 @@
+# Base lightweight Python runtime
+FROM python:3.11-slim
+
+# Prevent Python from writing .pyc files and buffer stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download the HuggingFace embedding model into container image
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+
+# Copy application source code and docs
+COPY src/ ./src/
+COPY docs/ ./docs/
+
+# Expose FastAPI default port
+EXPOSE 8000
+
+# Run API server with production settings
+CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
