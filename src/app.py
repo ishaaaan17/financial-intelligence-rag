@@ -7,7 +7,7 @@ health diagnostics, and vector collection metadata endpoints.
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.docs import get_swagger_ui_html
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from pathlib import Path
@@ -91,10 +91,6 @@ _DOCS_THEME_CSS = """
     .swagger-ui .microlight { background: var(--panel-2) !important; }
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 5px; }
-
-    /* ReDoc overrides */
-    .menu-content { background: var(--panel) !important; }
-    .api-content { background: var(--ink) !important; }
 </style>
 """
 
@@ -112,11 +108,65 @@ async def themed_swagger_ui():
 
 @app.get("/redoc", include_in_schema=False)
 async def themed_redoc():
-    resp = get_redoc_html(
-        openapi_url=app.openapi_url,
-        title=f"{app.title} — ReDoc",
-    )
-    html = resp.body.decode("utf-8").replace("</head>", _DOCS_THEME_CSS + "</head>")
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{app.title} — ReDoc</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <style>
+            body {{ margin: 0; padding: 0; background: #0b0e14; }}
+        </style>
+    </head>
+    <body>
+        <div id="redoc-container"></div>
+        <script src="https://cdn.jsdelivr.net/npm/redoc@2/bundles/redoc.standalone.js"></script>
+        <script>
+            Redoc.init("{app.openapi_url}", {{
+                theme: {{
+                    colors: {{
+                        primary: {{ main: "#e8a33d" }},
+                        success: {{ main: "#2f9e5b" }},
+                        warning: {{ main: "#e8a33d" }},
+                        error: {{ main: "#e5484d" }},
+                        text: {{ primary: "#e7eaf2", secondary: "#8992a6" }},
+                        border: {{ dark: "#262d3a", light: "#262d3a" }},
+                        http: {{
+                            get: "#2f9e5b", post: "#3b82c4", put: "#e8a33d",
+                            delete: "#e5484d", options: "#8992a6", basic: "#8992a6"
+                        }}
+                    }},
+                    sidebar: {{
+                        width: "300px",
+                        backgroundColor: "#12161f",
+                        textColor: "#e7eaf2",
+                        activeTextColor: "#e8a33d",
+                        groupItems: {{ textTransform: "none" }},
+                        level1Items: {{ textTransform: "none" }}
+                    }},
+                    rightPanel: {{
+                        backgroundColor: "#0d1119",
+                        textColor: "#e7eaf2",
+                        servers: {{ backgroundColor: {{ light: "#12161f", dark: "#12161f" }} }}
+                    }},
+                    codeBlock: {{ backgroundColor: "#171c27" }},
+                    typography: {{
+                        fontFamily: "'IBM Plex Sans', -apple-system, sans-serif",
+                        headings: {{ fontFamily: "'IBM Plex Sans', sans-serif", fontWeight: "600" }},
+                        code: {{
+                            fontFamily: "'IBM Plex Mono', monospace",
+                            backgroundColor: "#171c27",
+                            color: "#e8a33d"
+                        }}
+                    }}
+                }}
+            }}, document.getElementById("redoc-container"));
+        </script>
+    </body>
+    </html>
+    """
     return HTMLResponse(html)
 
 

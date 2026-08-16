@@ -4,12 +4,14 @@ Provides interactive filing ingestion, natural language querying, metrics visual
 """
 
 import os
+
 import streamlit as st
 import httpx
 import pandas as pd
 
-# Fallback to local 8000 if not passed via container environment
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+# Defaults to localhost for local dev; override with API_BASE_URL env var
+# (e.g. http://financial-rag-api:8000 when running via docker-compose).
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(
     page_title="SEC Financial Intelligence Engine",
