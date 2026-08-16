@@ -13,3 +13,24 @@ services:
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+    networks:
+      - rag-network
+
+  financial-rag-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: financial-rag-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://financial-rag-api:8000
+    depends_on:
+      - financial-rag-api
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
