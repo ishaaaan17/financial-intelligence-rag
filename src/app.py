@@ -7,6 +7,7 @@ health diagnostics, and vector collection metadata endpoints.
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 from pathlib import Path
@@ -32,8 +33,8 @@ This backend orchestrates a **self-correcting LangGraph workflow** paired with *
 * 📊 **Table-Native Extraction**: Markdown table preserving parser for financial matrices.
     """,
     version="1.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,   # custom themed route defined below, same URL
+    redoc_url=None,  # custom themed route defined below, same URL
     swagger_ui_parameters={
         "defaultModelsExpandDepth": -1,       # Hides schema clutter at the bottom
         "docExpansion": "list",                # Clean listing of endpoints
@@ -54,6 +55,69 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+
+# --- Custom-themed API docs (matches the landing page's dark/amber design system) ---
+_DOCS_THEME_CSS = """
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+    :root {
+        --ink: #0b0e14; --panel: #12161f; --panel-2: #171c27;
+        --hairline: #262d3a; --text: #e7eaf2; --muted: #8992a6;
+        --amber: #e8a33d; --amber-dim: rgba(232, 163, 61, 0.14);
+    }
+    html, body { background: var(--ink) !important; }
+    body { font-family: 'IBM Plex Sans', -apple-system, sans-serif !important; }
+    .swagger-ui, .redoc-wrap { background: var(--ink); color: var(--text); }
+    .swagger-ui .topbar { background: var(--panel); border-bottom: 1px solid var(--hairline); }
+    .swagger-ui .topbar .download-url-wrapper { display: none; }
+    .swagger-ui .info .title, .swagger-ui .info h1, .swagger-ui .info h2,
+    .swagger-ui .info h3, .swagger-ui .info li, .swagger-ui .info p,
+    .swagger-ui .opblock-tag, .swagger-ui label, .swagger-ui .parameter__name,
+    .swagger-ui table thead tr th, .swagger-ui .response-col_status { color: var(--text); }
+    .swagger-ui .opblock-tag { border-bottom: 1px solid var(--hairline); }
+    .swagger-ui .scheme-container { background: var(--panel); box-shadow: none; border-bottom: 1px solid var(--hairline); }
+    .swagger-ui .opblock { background: var(--panel); border: 1px solid var(--hairline); border-radius: 4px; }
+    .swagger-ui .opblock .opblock-summary-method { background: var(--amber); color: var(--ink); font-weight: 600; border-radius: 3px; }
+    .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-description { color: var(--text); }
+    .swagger-ui .btn.execute { background: var(--amber); border-color: var(--amber); color: var(--ink); font-weight: 600; }
+    .swagger-ui .btn.authorize { color: var(--amber); border-color: var(--amber); }
+    .swagger-ui select, .swagger-ui input[type=text], .swagger-ui textarea {
+        background: var(--panel-2); color: var(--text); border-color: var(--hairline);
+    }
+    .swagger-ui .model-box, .swagger-ui .responses-inner, .swagger-ui .opblock-body,
+    .swagger-ui .tab li, .swagger-ui .parameters-col_description { background: var(--panel); }
+    .swagger-ui .model-title, .swagger-ui .prop-type { color: var(--amber); }
+    .swagger-ui .microlight { background: var(--panel-2) !important; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 5px; }
+
+    /* ReDoc overrides */
+    .menu-content { background: var(--panel) !important; }
+    .api-content { background: var(--ink) !important; }
+</style>
+"""
+
+
+@app.get("/docs", include_in_schema=False)
+async def themed_swagger_ui():
+    resp = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} — Swagger",
+        swagger_ui_parameters=app.swagger_ui_parameters,
+    )
+    html = resp.body.decode("utf-8").replace("</head>", _DOCS_THEME_CSS + "</head>")
+    return HTMLResponse(html)
+
+
+@app.get("/redoc", include_in_schema=False)
+async def themed_redoc():
+    resp = get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} — ReDoc",
+    )
+    html = resp.body.decode("utf-8").replace("</head>", _DOCS_THEME_CSS + "</head>")
+    return HTMLResponse(html)
 
 
 # --- Pydantic Data Models with Rich OpenAPI Examples ---
@@ -372,7 +436,7 @@ def backend_dashboard():
                 <div class="links">
                     <a href="/docs" class="stamp primary">Swagger — /docs</a>
                     <a href="/redoc" class="stamp">ReDoc — /redoc</a>
-                    <a href="http://localhost:8501" target="_blank" class="stamp">Streamlit UI</a>
+                    <a href="#" id="streamlitLink" target="_blank" class="stamp">Streamlit UI</a>
                     <a href="/health" class="stamp">Health probe — /health</a>
                 </div>
             </div>
@@ -395,6 +459,12 @@ def backend_dashboard():
             const track = document.getElementById('tickerTrack');
             const renderItems = () => items.map(([k, v]) => `<span>${{k}} <b>${{v}}</b></span>`).join('');
             track.innerHTML = renderItems() + renderItems();
+
+            // The Streamlit frontend runs on the same host as this page, just on
+            // port 8501 — compute that from window.location instead of hardcoding
+            // localhost, so the link works from any machine hitting this server.
+            document.getElementById('streamlitLink').href =
+                `${{window.location.protocol}}//${{window.location.hostname}}:8501`;
 
             // Live health probe against the API itself.
             async function checkHealth() {{
