@@ -2,12 +2,25 @@
 Document parser module.
 Extracts text and tables from SEC filings (PDFs) and formats them into
 structured, metadata-tagged chunks suitable for vector storage.
+
+Prose is split into overlapping chunks (see ``SECParser._split_text_into_chunks``)
+so a full page of narrative never becomes a single embedding input — the
+embedding model truncates long inputs, which silently drops content.
+Tables are never split: each extracted table stays one chunk so its
+row/column alignment survives intact.
 """
 
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import pdfplumber
+
+# Prose chunking parameters. ~1,200 characters keeps a chunk comfortably
+# inside the embedding model's token window while retaining enough local
+# context; the ~150-character overlap prevents a fact that straddles a
+# boundary from being split across two chunks with neither holding it whole.
+CHUNK_SIZE = 1200
+CHUNK_OVERLAP = 150
 
 
 @dataclass
@@ -57,6 +70,51 @@ class SECParser:
 
         return "\n".join([header_line, separator_line] + data_lines)
 
+    def _split_text_into_chunks(
+        self,
+        text: str,
+        chunk_size: int = CHUNK_SIZE,
+        chunk_overlap: int = CHUNK_OVERLAP,
+    ) -> List[str]:
+        """
+        Splits prose into overlapping chunks of at most ``chunk_size``
+        characters. Breaks prefer paragraph, line, sentence, then word
+        boundaries near the end of each window; the next chunk starts
+        ``chunk_overlap`` characters before the previous one ended so
+        boundary-straddling facts appear whole in at least one chunk.
+        """
+        text = text.strip()
+        if not text:
+            return []
+        if len(text) <= chunk_size:
+            return [text]
+
+        chunks: List[str] = []
+        start = 0
+        total = len(text)
+        while start < total:
+            end = min(start + chunk_size, total)
+            if end < total:
+                # Look for a natural break in the last 40% of the window.
+                search_from = start + int(chunk_size * 0.6)
+                break_at = -1
+                for sep in ("\n\n", "\n", ". ", " "):
+                    break_at = text.rfind(sep, search_from, end)
+                    if break_at > start:
+                        break
+                if break_at > start:
+                    end = break_at
+            chunk = text[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+            if end >= total:
+                break
+            # Step back by the overlap, but always move forward.
+            start = max(end - chunk_overlap, start + 1)
+            while start < total and text[start] in " \n":
+                start += 1
+        return chunks
+
     def parse_pdf(self, file_path: Path) -> List[DocumentChunk]:
         """
         Parses a PDF file, extracting text and tables page-by-page.
@@ -88,20 +146,25 @@ class SECParser:
                             )
                         )
 
-                # 2. Extract prose / narrative text
+                # 2. Extract prose / narrative text and chunk it, so one
+                # page of prose does not become one oversized embedding
+                # input (see module docstring). Tables above stay whole.
                 text = page.extract_text()
                 if text and text.strip():
-                    chunks.append(
-                        DocumentChunk(
-                            content=text.strip(),
-                            metadata={
-                                "ticker": self.ticker,
-                                "fiscal_year": self.fiscal_year,
-                                "fiscal_period": self.fiscal_period,
-                                "page": page_idx,
-                                "type": "text",
-                            }
+                    text_chunks = self._split_text_into_chunks(text)
+                    for chunk_idx, text_chunk in enumerate(text_chunks):
+                        chunks.append(
+                            DocumentChunk(
+                                content=text_chunk,
+                                metadata={
+                                    "ticker": self.ticker,
+                                    "fiscal_year": self.fiscal_year,
+                                    "fiscal_period": self.fiscal_period,
+                                    "page": page_idx,
+                                    "type": "text",
+                                    "chunk_index": chunk_idx,
+                                }
+                            )
                         )
-                    )
 
         return chunks
