@@ -592,6 +592,10 @@ async def ingest_filing(
             chunks_stored=len(chunks)
         )
 
+    except HTTPException:
+        # Deliberate client errors (e.g. the 400 for an empty/scanned PDF
+        # above) must surface as-is, not be re-wrapped as a 500.
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ingestion error: {str(e)}")
 
@@ -619,7 +623,20 @@ async def run_query(request: QueryRequest):
         "citations": []
     }
 
-    final_output = financial_rag_app.invoke(initial_state)
+    try:
+        final_output = financial_rag_app.invoke(initial_state)
+    except Exception as e:
+        # Upstream failures (Groq timeout/rate-limit after retries, Qdrant
+        # outage, ...) return a structured 502 instead of an unhandled 500
+        # with a bare stack trace, so clients can tell the engine's own
+        # errors apart from dependency failures.
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "detail": f"Query execution failed: {str(e)}",
+                "error_type": type(e).__name__,
+            },
+        )
 
     return QueryResponse(
         query=request.query,
