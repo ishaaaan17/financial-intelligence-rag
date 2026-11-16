@@ -16,6 +16,7 @@ import tempfile
 
 from src.config import settings
 from src.parser import SECParser
+from src.edgar import EdgarError, fetch_latest_filing
 from src.nodes import vector_store
 from src.graph import financial_rag_app
 
@@ -196,6 +197,21 @@ class IngestResponse(BaseModel):
     fiscal_year: int
     fiscal_period: str
     chunks_stored: int
+
+
+class EdgarFetchRequest(BaseModel):
+    ticker: str = Field(..., description="Ticker symbol (e.g. AAPL, MSFT)")
+    form: str = Field(default="10-Q", description="Filing form to fetch (10-Q, 10-K, ...)")
+
+
+class EdgarFetchResponse(BaseModel):
+    ticker: str
+    form: str
+    accession_number: str
+    filing_date: str
+    report_date: str
+    source_url: str
+    saved_to: str
 
 
 # --- Root Dashboard (Rich Backend UI at http://127.0.0.1:8000/) ---
@@ -602,6 +618,35 @@ async def ingest_filing(
     finally:
         if tmp_path.exists():
             tmp_path.unlink()
+
+
+@app.post("/ingest-edgar", response_model=EdgarFetchResponse, tags=["Data Pipeline"])
+async def ingest_edgar(request: EdgarFetchRequest):
+    """
+    Fetches the latest filing of the given form for a ticker directly from
+    SEC EDGAR and saves the primary document into the raw-data staging
+    directory. This is step one of ingestion: PDF documents can then go
+    through POST /ingest for parsing and vector storage.
+    """
+    try:
+        filing, saved_path = fetch_latest_filing(
+            request.ticker, form=request.form, dest_dir=settings.raw_data_dir
+        )
+    except EdgarError as e:
+        raise HTTPException(
+            status_code=502,
+            detail={"detail": str(e), "error_type": "EdgarError"},
+        )
+
+    return EdgarFetchResponse(
+        ticker=filing.ticker,
+        form=filing.form,
+        accession_number=filing.accession_number,
+        filing_date=filing.filing_date,
+        report_date=filing.report_date,
+        source_url=filing.document_url,
+        saved_to=str(saved_path),
+    )
 
 
 @app.post("/query", response_model=QueryResponse, tags=["Agent Execution"])
