@@ -6,23 +6,30 @@
 [![Qdrant](https://img.shields.io/badge/VectorDB-Qdrant-DC2626.svg?logo=qdrant&logoColor=white)](https://qdrant.tech)
 [![Groq](<https://img.shields.io/badge/LLM-Groq%20(Llama--3.3--70B)-F05A28.svg>)](https://groq.com)
 [![Docker](https://img.shields.io/badge/Deployed%20with-Docker-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com)
-[![AWS EC2](https://img.shields.io/badge/Hosted%20on-AWS%20EC2-FF9900.svg?logo=amazonaws&logoColor=white)](https://aws.amazon.com/ec2/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An enterprise-grade, self-correcting Retrieval-Augmented Generation (RAG) agent engineered to perform complex, multi-period comparative financial analysis across SEC 10-Q and 10-K filings with zero hallucination.
+An enterprise-grade, self-correcting Retrieval-Augmented Generation (RAG) agent engineered to perform complex, multi-period comparative financial analysis across SEC 10-Q and 10-K filings, with an LLM-based grounding-verification step that checks generated claims against the retrieved filing text before answering.
 
 ---
 
-## 🌐 Live Deployment
+## 🌐 Hosting
 
-Both services are containerized with Docker and deployed on an **AWS EC2** instance.
+The previous AWS EC2 demo instance is no longer running, so its URLs have
+been removed rather than left as dead links. The current hosting plan:
 
-| Service                                    | URL                                                      |
-| ------------------------------------------ | -------------------------------------------------------- |
-| 🔌 **Backend API** (FastAPI, Swagger docs) | [http://13.51.255.255:8000/](http://13.51.255.255:8000/) |
-| 🖥️ **Frontend** (Streamlit dashboard)      | [http://13.51.255.255:8501/](http://13.51.255.255:8501/) |
+| Piece                                   | Host                                                                 |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| 🖥️ **Frontend** (web UI)                 | **Vercel** — static UI (built separately, in `financial-rag-vercel/`) |
+| 🔌 **Backend API** (FastAPI, this repo)  | **Hugging Face Spaces (Docker)** or **Render** — use this repo's `Dockerfile` |
+| 🗄️ **Vector store**                      | Qdrant Cloud free tier (unchanged)                                    |
+| 🧠 **LLM**                               | Groq API (unchanged)                                                  |
 
-> Note: this is a demo deployment on a plain HTTP EC2 endpoint (no domain/TLS yet), so browsers may show a "not secure" warning — that's expected.
+> Deployment URLs will be added here once the Vercel frontend and the API
+> space are live. Until then, run everything locally with the Quick Start
+> below — Docker (`docker-compose up`) still works exactly as before.
+> End-to-end query latency is budgeted at ~2.5–4.5 s per comparison
+> (see `docs/ARCHITECTURE.md` §4); retrieval-only latency can be measured
+> with `benchmarks/benchmark_retrieval.py`.
 
 ---
 
@@ -31,12 +38,13 @@ Both services are containerized with Docker and deployed on an **AWS EC2** insta
 - **Multi-Hop Query Planning:** Deconstructs comparative user prompts (e.g., _"Compare Apple's R&D spend between Q2 2024 and Q2 2025"_) into deterministic metadata targets (`ticker`, `years`, `quarters`, `metric`).
 - **Metadata-Isolated Vector Search:** Enforces strict payload filters (`ticker`, `fiscal_year`, `fiscal_period`) inside Qdrant Cloud to prevent cross-quarter context contamination.
 - **Table-Preserving Ingestion Pipeline:** Extracts financial tables from SEC PDFs using `pdfplumber` and serializes them into structured Markdown tables to maintain numerical column alignments.
-- **FlashRank Cross-Encoder Reranking:** Applies ultra-fast, local cross-encoder reranking (`ms-marco-TinyBERT-L-2-v2`) to prioritize relevant financial tables over boilerplate disclosure narrative.
+- **FlashRank Cross-Encoder Reranking:** Applies ultra-fast, local cross-encoder reranking (`ms-marco-TinyBERT-L-2-v2`) inside the retrieval step — the 5 chunks retrieved per period are reranked down to the top 3 — to prioritize relevant financial tables over boilerplate disclosure narrative.
+- **SEC EDGAR Ingestion:** Fetches real filings directly from EDGAR (`src/edgar.py`, `POST /ingest-edgar`, or `python scripts/fetch_filing.py --ticker AAPL`) instead of relying only on manual PDF uploads.
 - **Self-Correcting LangGraph State Machine:** Features conditional routing nodes:
   - `grade_documents`: Fallback to safe missing-period notifications if data is missing.
   - `verify_grounding`: Cross-references generated numerical claims against raw filing context to detect and block hallucinations.
 - **Zero-Dollar Cloud Stack:** Powered by local HuggingFace embeddings (`all-MiniLM-L6-v2`), Qdrant Cloud Free Tier, and Groq's free API tier.
-- **Containerized AWS Deployment:** Backend and frontend run as separate Docker containers (via `docker-compose`) on a single AWS EC2 instance, with ports 8000 (API) and 8501 (UI) exposed through the instance's security group.
+- **Containerized Deployment:** Backend and frontend run as separate Docker containers (via `docker-compose`); the API image is the same one used for the Hugging Face Spaces / Render deployment (see **Hosting** above).
 
 ---
 
@@ -99,8 +107,15 @@ financial-intelligence-rag/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                 # GitHub Actions automated test & build workflow
+├── benchmarks/
+│   ├── benchmark_retrieval.py     # Retrieval-latency benchmark (real runs only)
+│   └── README.md                  # What the benchmark does / does not measure
 ├── data/
+│   ├── README.md                  # Data layout and how to fetch filings
 │   └── raw/                       # Staging directory for sample SEC PDFs
+├── scripts/
+│   ├── fetch_filing.py            # Download the latest filing for a ticker from EDGAR
+│   └── make_sample_filing.py      # Generate a tiny synthetic sample filing PDF
 ├── docs/
 │   ├── ARCHITECTURE.md            # System topology & latency budgets
 │   ├── CONSTRAINTS.md             # Non-negotiable technical guardrails
@@ -112,19 +127,26 @@ financial-intelligence-rag/
 │   ├── app.py                     # FastAPI server with custom UI & CORS
 │   ├── config.py                  # Pydantic Settings & environment schema
 │   ├── database.py                # Qdrant manager with auto-payload indexing
+│   ├── edgar.py                   # SEC EDGAR client (ticker -> CIK -> filing)
 │   ├── graph.py                   # Compiled LangGraph state machine & edges
 │   ├── nodes.py                   # Graph nodes, reranking, & verification
-│   ├── parser.py                  # SEC PDF & Markdown table extraction pipeline
+│   ├── parser.py                  # SEC PDF & Markdown table extraction + chunking
 │   └── state.py                   # TypedDict state definition
 ├── tests/
-│   └── test_pipeline.py           # Automated unit and integration tests
+│   ├── test_pipeline.py           # End-to-end pipeline tests (mocked graph)
+│   ├── test_nodes.py              # Unit tests for individual graph nodes
+│   ├── test_chunking.py           # Prose chunker + parse_pdf tests
+│   ├── test_metadata_isolation.py # search_filtered always filters ticker/year/period
+│   └── test_edgar.py              # EDGAR client tests (mocked HTTP, no network)
 ├── .env.example                   # Environment configuration template
 ├── .gitignore
-├── docker-compose.yml             # Multi-service AWS EC2 deployment config
+├── docker-compose.yml             # Multi-service Docker deployment config
 ├── Dockerfile                     # Optimized Python 3.11 container image
+├── Dockerfile.frontend            # Streamlit frontend container image
 ├── frontend.py                    # Streamlit interactive web dashboard
+├── LICENSE                        # MIT License
 ├── README.md                      # Project documentation
-└── requirements.txt                # Pinned Python package dependencies
+└── requirements.txt                # Python package dependencies (minimum versions)
 ```
 
 ---
@@ -193,7 +215,7 @@ streamlit run frontend.py
 
 - Streamlit Web UI: <http://localhost:8501>
 
-### Option B: Docker Deployment (used in production on AWS EC2)
+### Option B: Docker Deployment
 
 ```bash
 # Build and start container
@@ -203,7 +225,7 @@ docker-compose up --build -d
 docker-compose logs -f
 ```
 
-On the EC2 instance, the same commands are run after opening inbound TCP access to ports `8000` and `8501` in the instance's security group, so the services are reachable at the instance's public IP (see **Live Deployment** above).
+The same API image is used for the hosted deployment (see **Hosting** above).
 
 ---
 
@@ -212,7 +234,7 @@ On the EC2 instance, the same commands are run after opening inbound TCP access 
 Run the full test suite using pytest:
 
 ```bash
-pytest -v tests/test_pipeline.py
+pytest -v tests/
 ```
 
 ---
@@ -228,6 +250,14 @@ Probe endpoint for cloud health checks and load balancers.
 Upload and tag an SEC 10-Q/10-K filing PDF.
 
 **Form Data:** `ticker` (str), `fiscal_year` (int), `fiscal_period` (str), `file` (PDF binary).
+
+### `POST /ingest-edgar`
+
+Fetch the latest filing of a given form for a ticker directly from SEC
+EDGAR and save its primary document into `data/raw/`.
+
+**JSON Body:** `{ "ticker": "AAPL", "form": "10-Q" }` — also available as a
+CLI: `python scripts/fetch_filing.py --ticker AAPL --form 10-Q`.
 
 ### `POST /query`
 

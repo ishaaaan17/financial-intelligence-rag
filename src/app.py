@@ -29,8 +29,8 @@ app = FastAPI(
 This backend orchestrates a **self-correcting LangGraph workflow** paired with **Qdrant Vector Search** and **Groq Llama 3.3-70B**.
 
 ---
-* 🔍 **Smart Retrieval**: Period-filtered metadata vector searches with zero cross-quarter pollution.
-* 🛡️ **Zero-Hallucination Guard**: Post-generation fact verification engine.
+* 🔍 **Smart Retrieval**: Period-filtered metadata vector searches, isolated by ticker, fiscal year and fiscal period at the database level.
+* 🛡️ **Grounding Verification**: Post-generation check of generated claims against the retrieved filing text, with a bounded regeneration retry.
 * 📊 **Table-Native Extraction**: Markdown table preserving parser for financial matrices.
     """,
     version="1.1.0",
