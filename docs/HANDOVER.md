@@ -32,7 +32,7 @@ cd financial-intelligence-rag
 pip install -r requirements.txt
 
 # Configure environment variables (see below)
-cp .env.example .env   # if an example file exists — otherwise create .env manually
+cp .env.example .env   # .env.example is committed in the repo root
 ```
 
 ### Required environment variables
@@ -69,15 +69,45 @@ Key test files:
 
 ## 6. Known issues / open items
 
-> Add anything currently outstanding here.
-
--
+- **No recorded benchmark or eval yet.** `benchmarks/benchmark_retrieval.py`
+  exists and measures retrieval-only latency against a real, populated
+  Qdrant, but no run has been recorded and no question/answer eval set
+  exists. Until they do, no latency or retrieval-accuracy percentage
+  should be quoted for this project (see `benchmarks/README.md`).
+- **Hosting migration is documented but not yet deployed.** The old EC2
+  instance is down; the Vercel frontend + HF Spaces/Render API plan in
+  the README's Hosting section still needs the actual deployments and
+  their URLs added.
+- **Module-level singletons in `src/nodes.py`.** `llm`, `vector_store`
+  and `ranker` are constructed at import time (embedding model load,
+  Qdrant connection, FlashRank download to a hardcoded `/tmp/flashrank`,
+  which also breaks on native Windows). Importing the app therefore
+  requires a valid `GROQ_API_KEY` and network access; a lazy-initialised
+  factory would fix testability and the Windows path.
+- **Docker cold start.** The image pre-downloads the embedding model but
+  not the FlashRank reranker, so the first query in a fresh/offline
+  container downloads it at runtime. `docker-compose.yml` also has no
+  healthchecks and no local Qdrant service (Qdrant Cloud only).
+- **No auth or upload size limit on `/ingest` / `/ingest-edgar`.** Fine
+  for a local demo; must be addressed before any public deployment.
+- **Grounding verification is self-checking.** `verify_grounding` uses
+  the same LLM to judge its own output via prompt; there is no
+  deterministic numeric cross-check of figures against source tables.
+- **Grading is sampled.** `grade_documents` grades only the first 3
+  retrieved docs, truncated to 400 chars each — a deliberate cost/latency
+  trade-off, documented here so it isn't mistaken for full grading.
 
 ## 7. Next steps
 
-> Add remaining next steps here — the retry-path test and extended `test_pipeline.py` coverage that were previously listed are now complete (see §3).
-
--
+- Deploy the API (HF Spaces or Render, using the existing `Dockerfile`),
+  deploy the Vercel frontend, and add the live URLs to the README.
+- Run `benchmarks/benchmark_retrieval.py` against the populated Qdrant
+  and commit the resulting `benchmarks/results/retrieval_latency.json`.
+- Build a small eval: 10–20 questions over 2–3 real filings with expected
+  tables, reporting retrieval hit-rate at the pipeline's actual top-3.
+- Lazy-initialise the `nodes.py` singletons and make the FlashRank cache
+  directory configurable via environment variable.
+- Add an upload size limit (and an API key check if the API goes public).
 
 ## 8. Key references
 
