@@ -1,1 +1,317 @@
-IyDwn5OIIFNFQyBNdWx0aS1Ib3AgRmluYW5jaWFsIEludGVsbGlnZW5jZSBSQUcgRW5naW5lCgpbIVtDSSBQaXBlbGluZV0oaHR0cHM6Ly9naXRodWIuY29tL2lzaGFhYWFuMTcvZmluYW5jaWFsLWludGVsbGlnZW5jZS1yYWcvYWN0aW9ucy93b3JrZmxvd3MvY2kueW1sL2JhZGdlLnN2ZyldKGh0dHBzOi8vZ2l0aHViLmNvbS9pc2hhYWFhbjE3L2ZpbmFuY2lhbC1pbnRlbGxpZ2VuY2UtcmFnL2FjdGlvbnMpClshW0Zhc3RBUEldKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFkZ2UvRmFzdEFQSS0wLjExNSstMDA5Njg4LnN2Zz9sb2dvPWZhc3RhcGkmbG9nb0NvbG9yPXdoaXRlKV0oaHR0cHM6Ly9mYXN0YXBpLnRpYW5nb2xvLmNvbSkKWyFbTGFuZ0dyYXBoXShodHRwczovL2ltZy5zaGllbGRzLmlvL2JhZGdlL0xhbmdHcmFwaC1GRjZGMDAuc3ZnKV0oaHR0cHM6Ly9naXRodWIuY29tL2xhbmdjaGFpbi1haS9sYW5nZ3JhcGgpClshW1FkcmFudF0oaHR0cHM6Ly9pbWcuc2hpZWxkcy5pby9iYWRnZS9RZHJhbnQtREMyNjI2LnN2Zz9sb2dvPXFkcmFudCZsb2dvQ29sb3I9d2hpdGUpXShodHRwczovL3FkcmFudC50ZWNoKQpbIVtHcm9xXSg8aHR0cHM6Ly9pbWcuc2hpZWxkcy5pby9iYWRnZS9Hcm9xJTIwKExsYW1hLS0zLjMtLTcwQiktRjA1QTI4LnN2Zz4pXShodHRwczovL2dyb3EuY29tKQpbIVtEb2NrZXJdKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFkZ2UvRG9ja2VyLTI0OTZFRC5zdmc/bG9nbz1kb2NrZXImbG9nb0NvbG9yPXdoaXRlKV0oaHR0cHM6Ly93d3cuZG9ja2VyLmNvbSkKWyFbTGljZW5zZTogTUlUXShodHRwczovL2ltZy5zaGllbGRzLmlvL2JhZGdlL0xpY2Vuc2UtTUlULXllbGxvdy5zdmcpXShodHRwczovL29wZW5zb3VyY2Uub3JnL2xpY2Vuc2VzL01JVCkKCiMjIFN5c3RlbSBPdmVydmlldwoKVGhpcyBpcyBhIFJldHJpZXZhbC1BdWdtZW50ZWQgR2VuZXJhdGlvbiBzeXN0ZW0gZm9yIG9uZSBzcGVjaWZpYywgYXdrd2FyZCBraW5kIG9mIHF1ZXN0aW9uOiAqKmNvbXBhcmF0aXZlIHF1ZXN0aW9ucyBhY3Jvc3MgU0VDIGZpbGluZyBwZXJpb2RzKiog4oCUICoiQ29tcGFyZSBBcHBsZSdzIFImRCBzcGVuZCBiZXR3ZWVuIFEyIDIwMjQgYW5kIFEyIDIwMjUuIiogQSBnZW5lcmljIFJBRyBwaXBlbGluZSBoYW5kbGVzIHRoZXNlIGJhZGx5IGluIHR3byBjaGFyYWN0ZXJpc3RpYyB3YXlzOgoKMS4gKipDcm9zcy1wZXJpb2QgY29udGFtaW5hdGlvbi4qKiBTaW1pbGFyaXR5IHNlYXJjaCBhbG9uZSBoYXBwaWx5IHJldHJpZXZlcyB0aGUgcmlnaHQgbWV0cmljIGZyb20gdGhlICp3cm9uZyBxdWFydGVyKi4gVGhlIGFuc3dlciBsb29rcyBmbHVlbnQgYW5kIGlzIHF1aWV0bHkgd3JvbmcuCjIuICoqVW5ncm91bmRlZCBudW1iZXJzLioqIEFuIExMTSBhc2tlZCB0byBjb21wYXJlIGZpZ3VyZXMgd2lsbCBwcm9kdWNlIGEgdGFibGUgd2hldGhlciBvciBub3QgdGhlIHJldHJpZXZlZCB0ZXh0IGFjdHVhbGx5IGNvbnRhaW5zIHRob3NlIGZpZ3VyZXMuCgpTbyB0aGUgcGlwZWxpbmUgaXMgYnVpbHQgYXJvdW5kIGEgc2luZ2xlIHJ1bGUg4oCUICpldmVyeSBhbnN3ZXIgaXMgYSBjbGFpbSB0aGF0IGhhcyB0byBzdXJ2aXZlIGl0cyBvd24gY2l0YXRpb25zKiDigJQgaW1wbGVtZW50ZWQgYXMgYSBMYW5nR3JhcGggc3RhdGUgbWFjaGluZToKCjEuICoqRGVjb21wb3NlKiogdGhlIHF1ZXN0aW9uIGludG8gZGV0ZXJtaW5pc3RpYyBtZXRhZGF0YSB0YXJnZXRzIChgdGlja2VyYCwgYHllYXJzYCwgYHF1YXJ0ZXJzYCwgYG1ldHJpY2ApIGluc3RlYWQgb2YgZW1iZWRkaW5nIHRoZSByYXcgcXVlc3Rpb24gYW5kIGhvcGluZy4KMi4gKipSZXRyaWV2ZSBwZXIgcGVyaW9kLCB3aXRoIGhhcmQgcGF5bG9hZCBmaWx0ZXJzKiogb24gYHRpY2tlcmAgKyBgZmlzY2FsX3llYXJgICsgYGZpc2NhbF9wZXJpb2RgLCBzbyBvbmUgcGVyaW9kJ3MgY2h1bmtzIGNhbiBuZXZlciBsZWFrIGludG8gYW5vdGhlciBwZXJpb2QncyBjb250ZXh0LgozLiAqKlJlcmFuayoqIGVhY2ggcGVyaW9kJ3MgY2FuZGlkYXRlcyB3aXRoIGEgbG9jYWwgY3Jvc3MtZW5jb2RlciAoRmxhc2hSYW5rKSwgcHJlZmVycmluZyBmaW5hbmNpYWwgdGFibGVzIG92ZXIgbmFycmF0aXZlIGJvaWxlcnBsYXRlLgo0LiAqKkdyYWRlKiogdGhlIHJldHJpZXZlZCBzZXQ7IGlmIGEgcGVyaW9kJ3MgZGF0YSBpcyBtaXNzaW5nLCBzYXkgc28gaW5zdGVhZCBvZiBpbXByb3Zpc2luZy4KNS4gKipHZW5lcmF0ZSoqIHRoZSBjb21wYXJpc29uLCB0aGVuICoqdmVyaWZ5KiogaXQ6IGEgZ3JvdW5kaW5nIG5vZGUgcmUtY2hlY2tzIHRoZSBhbnN3ZXIncyBudW1lcmljYWwgY2xhaW1zIGFnYWluc3QgdGhlIHJldHJpZXZlZCBmaWxpbmcgdGV4dCwgd2l0aCBvbmUgcmVnZW5lcmF0aW9uIHJldHJ5IGJlZm9yZSB0aGUgYW5zd2VyIGlzIGZsYWdnZWQgcmF0aGVyIHRoYW4gc2hpcHBlZCBzaWxlbnRseS4KClRoZSBzdGFjayBpcyBkZWxpYmVyYXRlbHkgemVyby1kb2xsYXI6IGxvY2FsIEh1Z2dpbmdGYWNlIGVtYmVkZGluZ3MgKGBhbGwtTWluaUxNLUw2LXYyYCksIFFkcmFudCBDbG91ZCBmcmVlIHRpZXIsIGFuZCBHcm9xJ3MgZnJlZSBBUEkgdGllciAoYGxsYW1hLTMuMy03MGItdmVyc2F0aWxlYCwgdGVtcGVyYXR1cmUgMC4wKS4KCiMjIE1lYXN1cmVtZW50IFN0YXR1cyDigJQgV2hhdCBJcyBhbmQgSXMgTm90IENsYWltZWQKClRoaXMgcHJvamVjdCBwcmV2aW91c2x5IHF1b3RlZCByZXRyaWV2YWwgbnVtYmVycyAoYSAiNy4yNSBtcyBQNTAgbGF0ZW5jeSIsICIxMDAlIFRvcC00IHRhYmxlIHJldHJpZXZhbCIpIHRoYXQgd2VyZSBuZXZlciBtZWFzdXJlZCBhbnl3aGVyZSBpbiB0aGUgcmVwb3NpdG9yeS4gVGhleSBoYXZlIGJlZW4gcmVtb3ZlZCwgYW5kIHRoaXMgc2VjdGlvbiBleGlzdHMgc28gdGhleSBhcmUgbm90IHJlcGxhY2VkIGJ5IG5ldyBvbmVzOgoKfCBDbGFpbSB0eXBlIHwgU3RhdHVzIHwKfC0tLXwtLS18CnwgRW5kLXRvLWVuZCBsYXRlbmN5IHwgQSAqKmJ1ZGdldCoqLCBub3QgYSBtZWFzdXJlbWVudDogfjIuNeKAkzQuNSBzIHBlciAyLXBlcmlvZCBjb21wYXJpc29uLCBicm9rZW4gZG93biBpbiBgZG9jcy9BUkNISVRFQ1RVUkUubWRgIMKnNC4gU3ludGhlc2lzIG9uIEdyb3EgKH4x4oCTMi41IHMpIGlzIHRoZSBkb21pbmFudCBjb3N0LiB8CnwgUmV0cmlldmFsIGxhdGVuY3kgfCAqKk1lYXN1cmFibGUsIG5vdCB5ZXQgbWVhc3VyZWQuKiogYGJlbmNobWFya3MvYmVuY2htYXJrX3JldHJpZXZhbC5weWAgdGltZXMgZmlsdGVyZWQgc2VhcmNoIGFnYWluc3QgYSByZWFsLCBwb3B1bGF0ZWQgUWRyYW50IGNvbGxlY3Rpb24uIFVudGlsIGl0IGlzIHJ1biBhZ2FpbnN0IG9uZSwgbm8gbGF0ZW5jeSBudW1iZXIgaXMgcXVvdGVkLiBTZWUgYGJlbmNobWFya3MvUkVBRE1FLm1kYCBmb3IgZXhhY3RseSB3aGF0IGl0IGRvZXMgYW5kIGRvZXMgbm90IG1lYXN1cmUuIHwKfCBNZXRhZGF0YSBpc29sYXRpb24gfCAqKkVuZm9yY2VkIGFuZCB0ZXN0LWNvdmVyZWQqKiwgbm90IGJlbmNobWFya2VkIGFzIGEgcGVyY2VudGFnZTogYHNlYXJjaF9maWx0ZXJlZGAgYWx3YXlzIGJ1aWxkcyB0aGUgdGlja2VyL3llYXIvcGVyaW9kIHBheWxvYWQgZmlsdGVyLCBhbmQgYHRlc3RzL3Rlc3RfbWV0YWRhdGFfaXNvbGF0aW9uLnB5YCBmYWlscyBpZiBpdCBldmVyIGRvZXNuJ3QuIHwKfCBBbnN3ZXIgLyByZXRyaWV2YWwgYWNjdXJhY3kgfCAqKk5vIGxhYmVsbGVkIGV2YWx1YXRpb24gc2V0IGV4aXN0cyoqLCBzbyBubyBhY2N1cmFjeSBwZXJjZW50YWdlIGlzIGNsYWltZWQgYW55d2hlcmUuIFRoZSBncm91bmRpbmcgdmVyaWZpZXIgKGJlbG93KSBpcyBhIHBlci1hbnN3ZXIgY2hlY2ssIG5vdCBhbiBhY2N1cmFjeSBiZW5jaG1hcmsuIHwKfCBUZXN0IHN1aXRlIHwgMzcgdGVzdHMgYWNyb3NzIDUgZmlsZXMgKGBweXRlc3RgKSwgY292ZXJpbmcgY2h1bmtpbmcsIEVER0FSIGluZ2VzdGlvbiAobW9ja2VkIEhUVFApLCBtZXRhZGF0YSBpc29sYXRpb24sIGdyYXBoIG5vZGVzLCBhbmQgdGhlIGVuZC10by1lbmQgcGlwZWxpbmUgKG1vY2tlZCBncmFwaCkuIHwKCi0tLQoKIyMg8J+agCBDb3JlIEFyY2hpdGVjdHVyYWwgRmVhdHVyZXMKCiMjIyBEZXRlcm1pbmlzdGljIFF1ZXJ5IERlY29tcG9zaXRpb24gKGBzcmMvbm9kZXMucHk6IGRlY29tcG9zZV9xdWVyeWApCgpDb21wYXJhdGl2ZSBxdWVzdGlvbnMgYXJlIHBhcnNlZCBpbnRvIHN0cnVjdHVyZWQgdGFyZ2V0cyDigJQgdGlja2VyLCB0aGUgbGlzdCBvZiAoeWVhciwgcXVhcnRlcikgcGVyaW9kcywgYW5kIHRoZSBtZXRyaWMg4oCUIGJlZm9yZSBhbnkgdmVjdG9yIHNlYXJjaCBoYXBwZW5zLiBSZXRyaWV2YWwgdGhlbiBydW5zICoqb25jZSBwZXIgcGVyaW9kKiogYWdhaW5zdCB0aGF0IHBlcmlvZCdzIG1ldGFkYXRhLCB3aGljaCB0dXJucyAiY29tcGFyZSBRMiAyMDI0IHdpdGggUTIgMjAyNSIgaW50byB0d28gc21hbGwsIHdlbGwtc2NvcGVkIHNlYXJjaGVzIGluc3RlYWQgb2Ygb25lIGZ1enp5IG9uZS4gU3RhdGUgaXMgcGFzc2VkIG5vZGUgdG8gbm9kZSB0aHJvdWdoIGEgdHlwZWQgYEFnZW50U3RhdGVgLCBzbyBldmVyeSBzdGVwJ3MgaW5wdXRzIGFuZCBvdXRwdXRzIGFyZSBpbnNwZWN0YWJsZS4KCiMjIyBNZXRhZGF0YS1Jc29sYXRlZCBWZWN0b3IgU2VhcmNoIChgc3JjL2RhdGFiYXNlLnB5YCkKCkV2ZXJ5IHNlYXJjaCBnb2VzIHRocm91Z2ggYHNlYXJjaF9maWx0ZXJlZGAsIHdoaWNoICoqYWx3YXlzKiogYXR0YWNoZXMgYSBRZHJhbnQgcGF5bG9hZCBmaWx0ZXIgb24gYHRpY2tlcmAsIGBmaXNjYWxfeWVhcmAsIGFuZCBgZmlzY2FsX3BlcmlvZGAg4oCUIHRoZXJlIGlzIG5vIGNvZGUgcGF0aCB0aGF0IHNlYXJjaGVzIHRoZSBjb2xsZWN0aW9uIHVuZmlsdGVyZWQuIFRoZSBjb2xsZWN0aW9uIGF1dG8tY3JlYXRlcyBwYXlsb2FkIGluZGV4ZXMgb24gdGhvc2UgZmllbGRzLiBUaGlzIGlzIHRoZSBtZWNoYW5pc20gdGhhdCBwcmV2ZW50cyBjcm9zcy1xdWFydGVyIGNvbnRhbWluYXRpb24sIGFuZCBpdCBpcyBsb2NrZWQgaW4gYnkgdGVzdHM6IGB0ZXN0cy90ZXN0X21ldGFkYXRhX2lzb2xhdGlvbi5weWAgYXNzZXJ0cyB0aGUgZmlsdGVyIGlzIGJ1aWx0IGZvciBldmVyeSBjYWxsLgoKIyMjIFRhYmxlLVByZXNlcnZpbmcgSW5nZXN0aW9uICsgUmVhbCBQcm9zZSBDaHVua2luZyAoYHNyYy9wYXJzZXIucHlgKQoKU0VDIGZpbGluZ3MgbGl2ZSBpbiB0aGVpciB0YWJsZXMsIHNvIGluZ2VzdGlvbiB0cmVhdHMgdGFibGVzIGFuZCBwcm9zZSBkaWZmZXJlbnRseToKCi0gKipUYWJsZXMqKiBhcmUgZXh0cmFjdGVkIHdpdGggYHBkZnBsdW1iZXJgIGFuZCBzZXJpYWxpemVkIHRvIE1hcmtkb3duICoqYXMgc2luZ2xlLCB1bnNwbGl0dGFibGUgY2h1bmtzKiog4oCUIGEgdGFibGUgY3V0IGluIGhhbGYgaXMgYSB3cm9uZyBudW1iZXIgd2FpdGluZyB0byBoYXBwZW4uCi0gKipQcm9zZSoqIGlzIHNwbGl0IGludG8gb3ZlcmxhcHBpbmcgY2h1bmtzIG9mICoqfjEsMjAwIGNoYXJhY3RlcnMgd2l0aCB+MTUwIGNoYXJhY3RlcnMgb2Ygb3ZlcmxhcCoqIChgQ0hVTktfU0laRWAvYENIVU5LX09WRVJMQVBgKSwgc28gYSBmYWN0IHN0cmFkZGxpbmcgYSBib3VuZGFyeSBzdXJ2aXZlcyB3aG9sZSBpbiBhdCBsZWFzdCBvbmUgY2h1bmsuCgpFdmVyeSBjaHVuayBjYXJyaWVzIGl0cyBgdGlja2VyYCAvIGBmaXNjYWxfeWVhcmAgLyBgZmlzY2FsX3BlcmlvZGAgLyBgcGFnZWAgLyBgdHlwZWAgbWV0YWRhdGEgaW50byBRZHJhbnQg4oCUIHRoZSBtZXRhZGF0YSB0aGUgaXNvbGF0aW9uIGZpbHRlciBhbmQgdGhlIGNpdGF0aW9ucyBhcmUgYnVpbHQgZnJvbS4KCiMjIyBGbGFzaFJhbmsgUmVyYW5raW5nIChgc3JjL25vZGVzLnB5OiByZXRyaWV2ZV9maWx0ZXJlZF9kb2NzYCkKClBlciBwZXJpb2QsIGZpbHRlcmVkIHNlYXJjaCByZXRyaWV2ZXMgNSBjYW5kaWRhdGVzOyBhIGxvY2FsIEZsYXNoUmFuayBjcm9zcy1lbmNvZGVyIChgbXMtbWFyY28tVGlueUJFUlQtTC0yLXYyYCkgcmVyYW5rcyB0aGVtIGRvd24gdG8gdGhlICoqdG9wIDMqKiB0aGF0IGFjdHVhbGx5IHJlYWNoIHRoZSBnZW5lcmF0b3IuIFJlcmFua2luZyBydW5zIGxvY2FsbHkgKG5vIEFQSSBjb3N0LCBubyBleHRyYSBuZXR3b3JrIGhvcCkgYW5kIGlzIHdoYXQgbGV0cyBkZW5zZSBmaW5hbmNpYWwgdGFibGVzIG91dHJhbmsgdGhlIGJvaWxlcnBsYXRlIGRpc2Nsb3N1cmUgbmFycmF0aXZlIHRoYXQgc3Vycm91bmRzIHRoZW0uCgojIyMgR3JhZGluZyBhbmQgdGhlIE1pc3NpbmctRGF0YSBQYXRoIChgZ3JhZGVfZG9jdW1lbnRzYCwgYGhhbmRsZV9taXNzaW5nX2RhdGFgKQoKQWZ0ZXIgcmV0cmlldmFsLCBhIGdyYWRpbmcgbm9kZSBjaGVja3Mgd2hldGhlciB0aGUgcmV0cmlldmVkIGNvbnRleHQgaXMgYWN0dWFsbHkgcmVsZXZhbnQuIElmIGEgcmVxdWVzdGVkIHBlcmlvZCBoYXMgbm8gdXNhYmxlIGRhdGEsIHRoZSBncmFwaCByb3V0ZXMgdG8gYGhhbmRsZV9taXNzaW5nX2RhdGFgIGFuZCB0aGUgcmVzcG9uc2Ugc2F5cyB0aGF0IHBlcmlvZCBpcyBtaXNzaW5nIOKAlCBhIGJvcmluZywgY29ycmVjdCBhbnN3ZXIgaW5zdGVhZCBvZiBhIGNvbmZpZGVudCwgaW52ZW50ZWQgb25lLgoKIyMjIEdyb3VuZGluZyBWZXJpZmljYXRpb24gTG9vcCAoYHZlcmlmeV9ncm91bmRpbmdgKQoKVGhlIGdlbmVyYXRlZCBjb21wYXJpc29uIGlzIG5vdCByZXR1cm5lZCBkaXJlY3RseS4gYHZlcmlmeV9ncm91bmRpbmdgIGNyb3NzLXJlZmVyZW5jZXMgdGhlIGFuc3dlcidzICoqbnVtZXJpY2FsIGNsYWltcyoqIGFnYWluc3QgdGhlIHJhdyByZXRyaWV2ZWQgY29udGV4dC4gSWYgYSBjbGFpbSBpcyB1bmdyb3VuZGVkIGFuZCB0aGUgcmV0cnkgYnVkZ2V0IHJlbWFpbnMgKGByZXRyeV9jb3VudCA8IE1BWF9HRU5FUkFUSU9OX1JFVFJJRVNgKSwgdGhlIGdyYXBoIGxvb3BzIHRocm91Z2ggYGluY3JlbWVudF9yZXRyeWAgYmFjayB0byBnZW5lcmF0aW9uIG9uY2UgbW9yZTsgaWYgaXQgaXMgc3RpbGwgdW5ncm91bmRlZCBhZnRlciB0aGF0LCB0aGUgcmVzcG9uc2UgaXMgcm91dGVkIHRvIGBoYW5kbGVfaGFsbHVjaW5hdGlvbmAgYW5kIHJldHVybmVkIHdpdGggYGhhbGx1Y2luYXRpb25fZGV0ZWN0ZWQ6IHRydWVgIHJhdGhlciB0aGFuIHByZXNlbnRlZCBhcyBmYWN0LiBJdCBpcyBhbiBMTE0tYmFzZWQgY2hlY2ssIG5vdCBhIGZvcm1hbCBwcm9vZiDigJQgc2VlICpLbm93biBMaW1pdGF0aW9ucyouCgojIyMgU0VDIEVER0FSIEluZ2VzdGlvbiAoYHNyYy9lZGdhci5weWApCgpGaWxpbmdzIG5vIGxvbmdlciBoYXZlIHRvIGJlIGRvd25sb2FkZWQgYW5kIHVwbG9hZGVkIGJ5IGhhbmQuIFRoZSBFREdBUiBjbGllbnQgcmVzb2x2ZXMgdGlja2VyIOKGkiBDSUsg4oaSIGxhdGVzdCBmaWxpbmcgb2YgYSByZXF1ZXN0ZWQgZm9ybSBhbmQgc2F2ZXMgdGhlIHByaW1hcnkgZG9jdW1lbnQgaW50byBgZGF0YS9yYXcvYDoKCmBgYGJhc2gKcHl0aG9uIHNjcmlwdHMvZmV0Y2hfZmlsaW5nLnB5IC0tdGlja2VyIEFBUEwgLS1mb3JtIDEwLVEKIyBvciB2aWEgdGhlIEFQSTogUE9TVCAvaW5nZXN0LWVkZ2FyICB7ICJ0aWNrZXIiOiAiQUFQTCIsICJmb3JtIjogIjEwLVEiIH0KYGBgCgpNYW51YWwgUERGIHVwbG9hZCAoYFBPU1QgL2luZ2VzdGApIHN0aWxsIHdvcmtzLCBhbmQgaXQgZmFpbHMgaG9uZXN0bHk6IGlmIFFkcmFudCByZWplY3RzIHRoZSB3cml0ZSwgdGhlIGVuZHBvaW50IHJldHVybnMgdGhlIHJlYWwgKio1MDAqKiBlcnJvciDigJQgYW4gZWFybGllciB2ZXJzaW9uIHN3YWxsb3dlZCBzdG9yYWdlIGZhaWx1cmVzIGFuZCByZXBvcnRlZCBzdWNjZXNzIGZvciBmaWxpbmdzIHRoYXQgd2VyZSBuZXZlciBzdG9yZWQuCgotLS0KCiMjIPCfm6DvuI8gU3lzdGVtIEFyY2hpdGVjdHVyZSAmIFdvcmtmbG93CgpgYGAKICAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rCiAgICAgICAgICAgfCBVc2VyIFByb21wdCAvIEFQSSBSZXF1ZXN0ICAgfAogICAgICAgICAgICstLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgICAgICAgICAgICAgICB8CiAgICAgICAgICAgICAgICAgICAgICAgICAgdgogICAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgfCAgIGRlY29tcG9zZV9xdWVyeSBOb2RlICAgICB8CiAgICAgICAgICAgIHwgKEV4dHJhY3QgVGlja2VyICYgUXVhcnRlcnMpfAogICAgICAgICAgICArLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgICAgICAgICAgICAgICB8CiAgICAgICAgICAgICAgICAgICAgICAgICAgdgogICAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgfCAgIEZpbHRlcmVkIFZlY3RvciBTZWFyY2ggICB8CiAgICAgICAgICAgIHwgICAgIChRZHJhbnQgQ2xvdWQpICAgICAgICAgfAogICAgICAgICAgICArLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgICAgICAgICAgICAgICB8CiAgICAgICAgICAgICAgICAgICAgICAgICAgdgogICAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSsKICAgICAgICAgICAgfCAgICBGbGFzaFJhbmsgUmVyYW5raW5nICAgICB8CiAgICAgICAgICAgICstLS0tLS0tLS0tLS0tKy0tLS0tLS0tLS0tLS0tKwogICAgICAgICAgICAgICAgICAgICAgICAgIHwKICAgICAgICAgICAgICAgICAgICAgICAgICB2CiAgICAgICArLS0tLSsgICAgZ3JhZGVfZG9jdW1lbnRzIE5vZGUgICAgKy0tLS0rCiAgICAgICB8ICAgICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKyAgICB8CltJcnJlbGV2YW50IC8gTWlzc2luZ10gICAgICAgICAgICAgICAgIFtSZWxldmFudCBDb250ZXh0XQogICAgICAgfCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfAogICAgICAgdiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdgorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rICAgICAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSsKfCAgaGFuZGxlX21pc3NpbmdfZGF0YSAgfCAgICAgICAgICAgICAgfCBnZW5lcmF0ZV9jb21wYXJpc29uICB8CistLS0tLS0tLS0tKy0tLS0tLS0tLS0tLSsgICAgICAgICAgICAgICstLS0tLS0tLS0tKy0tLS0tLS0tLS0tKwogICAgICAgICAgIHwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKICAgICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2CiAgICAgICAgICAgfCAgICAgICAgICAgICAgICAgICAgICAgICAgICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tKwogICAgICAgICAgIHwgICAgICAgICAgICAgICAgICAgICArLS0tLS0rICAgdmVyaWZ5X2dyb3VuZGluZyAgICstLS0tLSsKICAgICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgfCAgICAgKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rICAgICB8CiAgICAgICAgICAgfCAgICAgICAgICAgIFtIYWxsdWNpbmF0aW9uXSAgICAgICAgICAgICAgICAgICAgICAgW0dyb3VuZGVkXQogICAgICAgICAgIHwgICAgICAgICAgICAgICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKICAgICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgdiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB2CiAgICAgICAgICAgfCAgICAgICAgICArLS0tLS0tLS0tLS0tLS0tLS0tLS0tKyAgICAgICAgICAgICAgICAgICAgICBFTkQKICAgICAgICAgICArLS0tLS0tLS0tPnwgaGFuZGxlX2hhbGx1Y2luYXRpb258CiAgICAgICAgICAgICAgICAgICAgICAgKy0tLS0tLS0tLS0rLS0tLS0tLS0tLSsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHYKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgRU5ECmBgYAoKQSBmdWxsZXIgc3RlcC1ieS1zdGVwIGxpZmVjeWNsZSBpcyBpbiBgZG9jcy9GTE9XLm1kYDsgdG9wb2xvZ3kgYW5kIGxhdGVuY3kgYnVkZ2V0cyBpbiBgZG9jcy9BUkNISVRFQ1RVUkUubWRgOyB0aGUgcmVhc29uaW5nIGJlaGluZCB0aGUgZGVzaWduIGNob2ljZXMgaW4gYGRvY3MvREVDSVNJT05TLm1kYCAoQURScykuCgotLS0KCiMjIPCfk6YgUHJvamVjdCBEaXJlY3RvcnkgU3RydWN0dXJlCgpgYGAKZmluYW5jaWFsLWludGVsbGlnZW5jZS1yYWcvCuKUnOKUgOKUgCAuZ2l0aHViL3dvcmtmbG93cy9jaS55bWwgICAgICAgIyBHaXRIdWIgQWN0aW9ucyB0ZXN0ICYgYnVpbGQgd29ya2Zsb3cK4pSc4pSA4pSAIGJlbmNobWFya3MvCuKUgiAgIOKUnOKUgOKUgCBiZW5jaG1hcmtfcmV0cmlldmFsLnB5ICAgICAjIFJldHJpZXZhbC1sYXRlbmN5IGJlbmNobWFyayAocmVhbCBydW5zIG9ubHkpCuKUgiAgIOKUlOKUgOKUgCBSRUFETUUubWQgICAgICAgICAgICAgICAgICAjIFdoYXQgdGhlIGJlbmNobWFyayBkb2VzIC8gZG9lcyBub3QgbWVhc3VyZQrilJzilIDilIAgZGF0YS8K4pSCICAg4pSc4pSA4pSAIFJFQURNRS5tZCAgICAgICAgICAgICAgICAgICMgRGF0YSBsYXlvdXQgYW5kIGhvdyB0byBmZXRjaCBmaWxpbmdzCuKUgiAgIOKUlOKUgOKUgCByYXcvICAgICAgICAgICAgICAgICAgICAgICAjIFN0YWdpbmcgZGlyZWN0b3J5IGZvciBTRUMgUERGcyAoRURHQVIgbGFuZHMgaGVyZSkK4pSc4pSA4pSAIHNjcmlwdHMvCuKUgiAgIOKUnOKUgOKUgCBmZXRjaF9maWxpbmcucHkgICAgICAgICAgICAjIERvd25sb2FkIHRoZSBsYXRlc3QgZmlsaW5nIGZvciBhIHRpY2tlciBmcm9tIEVER0FSCuKUgiAgIOKUlOKUgOKUgCBtYWtlX3NhbXBsZV9maWxpbmcucHkgICAgICAjIEdlbmVyYXRlIGEgdGlueSBzeW50aGV0aWMgc2FtcGxlIGZpbGluZyBQREYK4pSc4pSA4pSAIGRvY3MvCuKUgiAgIOKUnOKUgOKUgCBBUkNISVRFQ1RVUkUubWQgICAgICAgICAgICAjIFN5c3RlbSB0b3BvbG9neSAmIGxhdGVuY3kgYnVkZ2V0cwrilIIgICDilJzilIDilIAgQ09OU1RSQUlOVFMubWQgICAgICAgICAgICAgIyBOb24tbmVnb3RpYWJsZSB0ZWNobmljYWwgZ3VhcmRyYWlscwrilIIgICDilJzilIDilIAgREVDSVNJT05TLm1kICAgICAgICAgICAgICAgIyBBcmNoaXRlY3R1cmUgRGVjaXNpb24gUmVjb3JkcyAoQURScykK4pSCICAg4pSc4pSA4pSAIEZMT1cubWQgICAgICAgICAgICAgICAgICAgICMgRGV0YWlsZWQgc3RlcC1ieS1zdGVwIHF1ZXJ5IGxpZmVjeWNsZQrilIIgICDilJTilIDilIAgSEFORE9WRVIubWQgICAgICAgICAgICAgICAgIyBFbmdpbmVlcmluZyBzZXNzaW9uIGhhbmRvZmYgc3VtbWFyeQrilJzilIDilIAgc3JjLwrilIIgICDilJzilIDilIAgYXBwLnB5ICAgICAgICAgICAgICAgICAgICAgIyBGYXN0QVBJIHNlcnZlciAoaGVhbHRoLCBpbmdlc3QsIGluZ2VzdC1lZGdhciwgcXVlcnkpCuKUgiAgIOKUnOKUgOKUgCBjb25maWcucHkgICAgICAgICAgICAgICAgICAjIFB5ZGFudGljIFNldHRpbmdzICYgZW52aXJvbm1lbnQgc2NoZW1hCuKUgiAgIOKUnOKUgOKUgCBkYXRhYmFzZS5weSAgICAgICAgICAgICAgICAjIFFkcmFudCBtYW5hZ2VyIHdpdGggYXV0byBwYXlsb2FkIGluZGV4aW5nOyBzZWFyY2hfZmlsdGVyZWQK4pSCICAg4pSc4pSA4pSAIGVkZ2FyLnB5ICAgICAgICAgICAgICAgICAgICMgU0VDIEVER0FSIGNsaWVudCAodGlja2VyIC0+IENJSyAtPiBmaWxpbmcpCuKUgiAgIOKUnOKUgOKUgCBncmFwaC5weSAgICAgICAgICAgICAgICAgICAjIENvbXBpbGVkIExhbmdHcmFwaCBzdGF0ZSBtYWNoaW5lICYgZWRnZXMK4pSCICAg4pSc4pSA4pSAIG5vZGVzLnB5ICAgICAgICAgICAgICAgICAgICMgR3JhcGggbm9kZXM6IGRlY29tcG9zZSwgcmV0cmlldmUrcmVyYW5rLCBncmFkZSwgZ2VuZXJhdGUsIHZlcmlmeQrilIIgICDilJzilIDilIAgcGFyc2VyLnB5ICAgICAgICAgICAgICAgICAgIyBQREYgdGFibGUgZXh0cmFjdGlvbiArIHByb3NlIGNodW5raW5nICgxMjAwLzE1MCkK4pSCICAg4pSU4pSA4pSAIHN0YXRlLnB5ICAgICAgICAgICAgICAgICAgICMgVHlwZWREaWN0IHN0YXRlIGRlZmluaXRpb24K4pSc4pSA4pSAIHRlc3RzLwrilIIgICDilJzilIDilIAgdGVzdF9waXBlbGluZS5weSAgICAgICAgICAgIyBFbmQtdG8tZW5kIHBpcGVsaW5lIHRlc3RzIChtb2NrZWQgZ3JhcGgpCuKUgiAgIOKUnOKUgOKUgCB0ZXN0X25vZGVzLnB5ICAgICAgICAgICAgICAjIFVuaXQgdGVzdHMgZm9yIGluZGl2aWR1YWwgZ3JhcGggbm9kZXMK4pSCICAg4pSc4pSA4pSAIHRlc3RfY2h1bmtpbmcucHkgICAgICAgICAgICMgUHJvc2UgY2h1bmtlciArIHBhcnNlX3BkZiB0ZXN0cwrilIIgICDilJzilIDilIAgdGVzdF9tZXRhZGF0YV9pc29sYXRpb24ucHkgIyBzZWFyY2hfZmlsdGVyZWQgYWx3YXlzIGZpbHRlcnMgdGlja2VyL3llYXIvcGVyaW9kCuKUgiAgIOKUlOKUgOKUgCB0ZXN0X2VkZ2FyLnB5ICAgICAgICAgICAgICAjIEVER0FSIGNsaWVudCB0ZXN0cyAobW9ja2VkIEhUVFAsIG5vIG5ldHdvcmspCuKUnOKUgOKUgCAuZW52LmV4YW1wbGUgICAgICAgICAgICAgICAgICAgIyBFbnZpcm9ubWVudCBjb25maWd1cmF0aW9uIHRlbXBsYXRlCuKUnOKUgOKUgCBkb2NrZXItY29tcG9zZS55bWwgICAgICAgICAgICAgIyBNdWx0aS1zZXJ2aWNlIERvY2tlciBkZXBsb3ltZW50IGNvbmZpZwrilJzilIDilIAgRG9ja2VyZmlsZSAgICAgICAgICAgICAgICAgICAgICMgQVBJIGNvbnRhaW5lciBpbWFnZSAoUHl0aG9uIDMuMTEpCuKUnOKUgOKUgCBEb2NrZXJmaWxlLmZyb250ZW5kICAgICAgICAgICAgIyBTdHJlYW1saXQgZnJvbnRlbmQgY29udGFpbmVyIGltYWdlCuKUnOKUgOKUgCBmcm9udGVuZC5weSAgICAgICAgICAgICAgICAgICAgIyBTdHJlYW1saXQgaW50ZXJhY3RpdmUgd2ViIGRhc2hib2FyZArilJzilIDilIAgTElDRU5TRSAgICAgICAgICAgICAgICAgICAgICAgICMgTUlUIExpY2Vuc2UK4pSU4pSA4pSAIHJlcXVpcmVtZW50cy50eHQKYGBgCgotLS0KCiMjIOKaoSBGdWxsIEV4ZWN1dGlvbiAmIERlcGxveW1lbnQgR3VpZGUKCiMjIyAxLiBTZXR1cAoKYGBgYmFzaApnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL2lzaGFhYWFuMTcvZmluYW5jaWFsLWludGVsbGlnZW5jZS1yYWcuZ2l0CmNkIGZpbmFuY2lhbC1pbnRlbGxpZ2VuY2UtcmFnCgpweXRob24gLW0gdmVudiByYWcKLlxyYWdcU2NyaXB0c1xBY3RpdmF0ZS5wczEgICAgICAgIyBXaW5kb3dzIFBvd2VyU2hlbGwKc291cmNlIHJhZy9iaW4vYWN0aXZhdGUgICAgICAgICAgIyBMaW51eCAvIG1hY09TCgpwaXAgaW5zdGFsbCAtciByZXF1aXJlbWVudHMudHh0CmBgYAoKQ3JlYXRlIGEgYC5lbnZgIGluIHRoZSBwcm9qZWN0IHJvb3Q6CgpgYGAKR1JPUV9BUElfS0VZPWdza195b3VyX2dyb3FfYXBpX2tleV9oZXJlClFEUkFOVF9VUkw9aHR0cHM6Ly95b3VyLWNsdXN0ZXItdXJsLnFkcmFudC5pbzo2MzMzClFEUkFOVF9BUElfS0VZPXlvdXJfcWRyYW50X2FwaV9rZXlfaGVyZQpDT0xMRUNUSU9OX05BTUU9c2VjX2ZpbGluZ3MKRU1CRURESU5HX01PREVMX05BTUU9c2VudGVuY2UtdHJhbnNmb3JtZXJzL2FsbC1NaW5pTE0tTDYtdjIKTExNX01PREVMPWxsYW1hLTMuMy03MGItdmVyc2F0aWxlCkxMTV9URU1QRVJBVFVSRT0wLjAKYGBgCgojIyMgMi4gSW5nZXN0IGEgZmlsaW5nCgpgYGBiYXNoCnB5dGhvbiBzY3JpcHRzL2ZldGNoX2ZpbGluZy5weSAtLXRpY2tlciBBQVBMIC0tZm9ybSAxMC1RICAgIyBmcm9tIEVER0FSLCBpbnRvIGRhdGEvcmF3LwojIHRoZW4gdXBsb2FkIGl0IHZpYSBQT1NUIC9pbmdlc3Qgd2l0aCBpdHMgdGlja2VyIC8gZmlzY2FsX3llYXIgLyBmaXNjYWxfcGVyaW9kLAojIG9yIFBPU1QgL2luZ2VzdC1lZGdhciB7ICJ0aWNrZXIiOiAiQUFQTCIsICJmb3JtIjogIjEwLVEiIH0gdG8gZmV0Y2ggaXQgc2VydmVyLXNpZGUKYGBgCgojIyMgMy4gUnVuIHRoZSBhcHBsaWNhdGlvbgoKKipMb2NhbCAodHdvIHRlcm1pbmFscyk6KioKCmBgYGJhc2gKdXZpY29ybiBzcmMuYXBwOmFwcCAtLXJlbG9hZCAtLWhvc3QgMTI3LjAuMC4xIC0tcG9ydCA4MDAwICAgIyBBUEkgKyBTd2FnZ2VyIGF0IC9kb2NzCnN0cmVhbWxpdCBydW4gZnJvbnRlbmQucHkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMgVUkgYXQgaHR0cDovL2xvY2FsaG9zdDo4NTAxCmBgYAoKKipEb2NrZXI6KioKCmBgYGJhc2gKZG9ja2VyLWNvbXBvc2UgdXAgLS1idWlsZCAtZApkb2NrZXItY29tcG9zZSBsb2dzIC1mCmBgYAoKIyMjIDQuIFJ1biB0aGUgdGVzdHMKCmBgYGJhc2gKcHl0ZXN0IC12IHRlc3RzLwpgYGAKCjM3IHRlc3RzOyBub25lIG9mIHRoZW0gbmVlZCBuZXR3b3JrIGFjY2VzcyBvciBBUEkga2V5cyAoRURHQVIgYW5kIHRoZSBncmFwaCBhcmUgbW9ja2VkIHdoZXJlIGFwcHJvcHJpYXRlKS4KCiMjIyA1LiBNZWFzdXJlIHJldHJpZXZhbCAob3B0aW9uYWwsIG5lZWRzIGEgcG9wdWxhdGVkIFFkcmFudCkKCmBgYGJhc2gKcHl0aG9uIGJlbmNobWFya3MvYmVuY2htYXJrX3JldHJpZXZhbC5weQpgYGAKClJlYWQgYGJlbmNobWFya3MvUkVBRE1FLm1kYCBmaXJzdCDigJQgaXQgc3RhdGVzIHByZWNpc2VseSB3aGF0IHRoZSBzY3JpcHQgdGltZXMgKGZpbHRlcmVkIHZlY3RvciBzZWFyY2ggb25seSkgYW5kIHdoYXQgaXQgZG9lcyBub3QgKGVuZC10by1lbmQgcXVlcnkgbGF0ZW5jeSkuCgotLS0KCiMjIPCfk6EgUkVTVCBBUEkgUmVmZXJlbmNlCgojIyMgYEdFVCAvaGVhbHRoYApQcm9iZSBlbmRwb2ludCBmb3IgY2xvdWQgaGVhbHRoIGNoZWNrcyBhbmQgbG9hZCBiYWxhbmNlcnMuCgojIyMgYFBPU1QgL2luZ2VzdGAKVXBsb2FkIGFuZCB0YWcgYW4gU0VDIDEwLVEvMTAtSyBmaWxpbmcgUERGLgoqKkZvcm0gRGF0YToqKiBgdGlja2VyYCAoc3RyKSwgYGZpc2NhbF95ZWFyYCAoaW50KSwgYGZpc2NhbF9wZXJpb2RgIChzdHIpLCBgZmlsZWAgKFBERiBiaW5hcnkpLgpTdG9yYWdlIGZhaWx1cmVzIHJldHVybiBhIHJlYWwgNTAwIOKAlCBhIDIwMCBtZWFucyB0aGUgZmlsaW5nIHdhcyBhY3R1YWxseSB3cml0dGVuIHRvIFFkcmFudC4KCiMjIyBgUE9TVCAvaW5nZXN0LWVkZ2FyYApGZXRjaCB0aGUgbGF0ZXN0IGZpbGluZyBvZiBhIGdpdmVuIGZvcm0gZm9yIGEgdGlja2VyIGRpcmVjdGx5IGZyb20gU0VDIEVER0FSIGFuZCBzYXZlIGl0cyBwcmltYXJ5IGRvY3VtZW50IGludG8gYGRhdGEvcmF3L2AuCioqSlNPTiBCb2R5OioqIGB7ICJ0aWNrZXIiOiAiQUFQTCIsICJmb3JtIjogIjEwLVEiIH1gCgojIyMgYFBPU1QgL3F1ZXJ5YApFeGVjdXRlIGEgbXVsdGktcGVyaW9kIGNvbXBhcmF0aXZlIGZpbmFuY2lhbCBxdWVyeS4KCioqUGF5bG9hZDoqKgpgYGBqc29uCnsgInF1ZXJ5IjogIkNvbXBhcmUgQXBwbGUncyBSJkQgc3BlbmQgYmV0d2VlbiBRMiAyMDI0IGFuZCBRMiAyMDI1IiB9CmBgYAoKKipSZXNwb25zZToqKgpgYGBqc29uCnsKICAicXVlcnkiOiAiQ29tcGFyZSBBcHBsZSdzIFImRCBzcGVuZCBiZXR3ZWVuIFEyIDIwMjQgYW5kIFEyIDIwMjUiLAogICJ0aWNrZXIiOiAiQUFQTCIsCiAgImFuc3dlciI6ICIjIyMgQ29tcGFyaXNvbiBvZiBBcHBsZSdzIFImRCBTcGVuZC4uLlxuXG58IFBlcmlvZCB8IFImRCBTcGVuZCAoaW4gbWlsbGlvbnMpIHwgQWJzb2x1dGUgQ2hhbmdlIHwgUGVyY2VudGFnZSBDaGFuZ2UgfFxufCAtLS0gfCAtLS0gfCAtLS0gfCAtLS0gfFxufCBRMiAyMDI0IHwgJDcsOTA3IHwgLSB8IC0gfFxufCBRMiAyMDI1IHwgJDgsNTUwIHwgKyQ2NDMgfCArOC4xMyUgfCIsCiAgImNpdGF0aW9ucyI6IFsKICAgIHsgInRpY2tlciI6ICJBQVBMIiwgImZpc2NhbF95ZWFyIjogMjAyNCwgImZpc2NhbF9wZXJpb2QiOiAiUTIiLCAicGFnZSI6IDEsICJ0eXBlIjogInRhYmxlIiB9CiAgXSwKICAiaGFsbHVjaW5hdGlvbl9kZXRlY3RlZCI6IGZhbHNlCn0KYGBgCgotLS0KCiMjIPCfjJAgSG9zdGluZwoKVGhlIHByZXZpb3VzIEFXUyBFQzIgZGVtbyBpbnN0YW5jZSBpcyBubyBsb25nZXIgcnVubmluZywgc28gaXRzIFVSTHMgaGF2ZSBiZWVuIHJlbW92ZWQgcmF0aGVyIHRoYW4gbGVmdCBhcyBkZWFkIGxpbmtzLiBUaGUgY3VycmVudCBob3N0aW5nIHBsYW46Cgp8IFBpZWNlIHwgSG9zdCB8CnwtLS18LS0tfAp8ICoqRnJvbnRlbmQqKiAod2ViIFVJKSB8ICoqVmVyY2VsKiog4oCUIHN0YXRpYyBVSSAoYnVpbHQgc2VwYXJhdGVseSkgfAp8ICoqQmFja2VuZCBBUEkqKiAoRmFzdEFQSSwgdGhpcyByZXBvKSB8ICoqSHVnZ2luZyBGYWNlIFNwYWNlcyAoRG9ja2VyKSoqIG9yICoqUmVuZGVyKiog4oCUIHRoaXMgcmVwbydzIGBEb2NrZXJmaWxlYCB8CnwgKipWZWN0b3Igc3RvcmUqKiB8IFFkcmFudCBDbG91ZCBmcmVlIHRpZXIgKHVuY2hhbmdlZCkgfAp8ICoqTExNKiogfCBHcm9xIEFQSSAodW5jaGFuZ2VkKSB8CgpEZXBsb3ltZW50IFVSTHMgd2lsbCBiZSBhZGRlZCBoZXJlIG9uY2UgdGhlIGZyb250ZW5kIGFuZCBBUEkgYXJlIGxpdmUuIFVudGlsIHRoZW4sIHJ1biBldmVyeXRoaW5nIGxvY2FsbHkgd2l0aCB0aGUgZ3VpZGUgYWJvdmUg4oCUIERvY2tlciAoYGRvY2tlci1jb21wb3NlIHVwYCkgd29ya3MgZXhhY3RseSBhcyBkb2N1bWVudGVkLgoKLS0tCgojIyBLbm93biBMaW1pdGF0aW9ucwoKLSAqKk5vdCBjdXJyZW50bHkgZGVwbG95ZWQuKiogVGhlIEVDMiBkZW1vIGlzIGdvbmUgYW5kIHRoZSBWZXJjZWwgKyBIRiBTcGFjZXMvUmVuZGVyIGhvc3RpbmcgYWJvdmUgaXMgYSBwbGFuIHdpdGggdGhlIHBpZWNlcyBidWlsdCwgbm90IGEgbGl2ZSBkZXBsb3ltZW50LiBUaGVyZSBpcyBubyBwdWJsaWMgVVJMIGZvciB0aGlzIHN5c3RlbSByaWdodCBub3cuCi0gKipMYXRlbmN5IGZpZ3VyZXMgYXJlIGJ1ZGdldHMsIG5vdCBtZWFzdXJlbWVudHMuKiogVGhlIH4yLjXigJM0LjUgcyBlbmQtdG8tZW5kIGZpZ3VyZSBpcyB0aGUgZGVzaWduIGJ1ZGdldCBpbiBgZG9jcy9BUkNISVRFQ1RVUkUubWRgOyByZXRyaWV2YWwgbGF0ZW5jeSBoYXMgYSBiZW5jaG1hcmsgc2NyaXB0IGJ1dCBoYXMgbm90IGJlZW4gcnVuIGFnYWluc3QgYSBwb3B1bGF0ZWQgcHJvZHVjdGlvbiBjb2xsZWN0aW9uLCBzbyBubyBtZWFzdXJlZCBudW1iZXIgaXMgcXVvdGVkLgotICoqTm8gYWNjdXJhY3kgZXZhbHVhdGlvbiBleGlzdHMuKiogVGhlcmUgaXMgbm8gbGFiZWxsZWQgcXVlc3Rpb24vYW5zd2VyIHNldCBmb3IgdGhpcyBjb3JwdXMsIHNvIHJldHJpZXZhbCBxdWFsaXR5IGFuZCBhbnN3ZXIgY29ycmVjdG5lc3MgYXJlIG5vdCBxdWFudGlmaWVkLiBUaGUgZ3JvdW5kaW5nIHZlcmlmaWVyIGNoZWNrcyBlYWNoIGFuc3dlcidzIG51bWJlcnMgYWdhaW5zdCBpdHMgb3duIHJldHJpZXZlZCBjb250ZXh0IOKAlCBpdCBjYW4gY2F0Y2ggbnVtYmVycyB0aGF0IGFwcGVhciBub3doZXJlIGluIHRoZSBmaWxpbmcgdGV4dCwgYnV0IGl0IGNhbm5vdCBjYXRjaCBhICp3cm9uZyBwZXJpb2QncyogcmVhbCBudW1iZXIgaWYgZGVjb21wb3NpdGlvbiB0YXJnZXRlZCB0aGUgd3JvbmcgcGVyaW9kLCBhbiBlcnJvciBpbnNpZGUgdGhlIGZpbGluZyBpdHNlbGYsIG9yIGEgc3VidGx5IHdyb25nIG5vbi1udW1lcmljYWwgY2xhaW0uIEl0IGlzIGFuIExMTSBqdWRnZW1lbnQsIG5vdCBhIHByb29mLgotICoqRGVjb21wb3NpdGlvbiBpcyBMTE0tZHJpdmVuLioqIEFuIGFtYmlndW91c2x5IHdvcmRlZCBxdWVzdGlvbiBjYW4gYmUgZGVjb21wb3NlZCBpbnRvIHRoZSB3cm9uZyBwZXJpb2RzIG9yIG1ldHJpYzsgdGhlIGdyYWRpbmcgYW5kIG1pc3NpbmctZGF0YSBwYXRocyBrZWVwIHRoYXQgZnJvbSBiZWNvbWluZyBhIHNpbGVudGx5IGludmVudGVkIGFuc3dlciwgYnV0IHRoZXkgY2Fubm90IG1ha2UgdGhlIGludGVycHJldGF0aW9uIHJpZ2h0LgotICoqRnJlZS10aWVyIGNlaWxpbmdzLioqIEdyb3EncyBmcmVlIHRpZXIgcmF0ZS1saW1pdHMgc3ludGhlc2lzICh0aGUgZG9taW5hbnQgbGF0ZW5jeSBjb3N0KSwgYW5kIFFkcmFudCdzIGZyZWUgdGllciBjYXBzIGNvbGxlY3Rpb24gc2l6ZTsgYSBsYXJnZSBtdWx0aS1jb21wYW55IGNvcnB1cyB3b3VsZCBuZWVkIHBhaWQgdGllcnMgb3Igc2VsZi1ob3N0aW5nLgotICoqSW5nZXN0aW9uIGlzIG5vdCBxdWVyeS1mYXN0LioqIFBhcnNpbmcgYW5kIGVtYmVkZGluZyBhIGZ1bGwgMTAtSyB0YWtlcyBzZWNvbmRzIHRvIH5hIG1pbnV0ZSBkZXBlbmRpbmcgb24gbGVuZ3RoIGFuZCB0YWJsZSBkZW5zaXR5OyBpdCBydW5zIG91dHNpZGUgdGhlIHF1ZXJ5IHBhdGggYnkgZGVzaWduLgoKIyMgTGljZW5zZQoKRGlzdHJpYnV0ZWQgdW5kZXIgdGhlIE1JVCBMaWNlbnNlLiBTZWUgYExJQ0VOU0VgIGZvciBkZXRhaWxzLgo=
+# 📈 SEC Multi-Hop Financial Intelligence RAG Engine
+
+[![CI Pipeline](https://github.com/ishaaaan17/financial-intelligence-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/ishaaaan17/financial-intelligence-rag/actions)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![LangGraph](https://img.shields.io/badge/LangGraph-FF6F00.svg)](https://github.com/langchain-ai/langgraph)
+[![Qdrant](https://img.shields.io/badge/Qdrant-DC2626.svg?logo=qdrant&logoColor=white)](https://qdrant.tech)
+[![Groq](<https://img.shields.io/badge/Groq%20(Llama--3.3--70B)-F05A28.svg>)](https://groq.com)
+[![Docker](https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## System Overview
+
+This is a Retrieval-Augmented Generation system for one specific, awkward kind of question: **comparative questions across SEC filing periods** — *"Compare Apple's R&D spend between Q2 2024 and Q2 2025."* A generic RAG pipeline handles these badly in two characteristic ways:
+
+1. **Cross-period contamination.** Similarity search alone happily retrieves the right metric from the *wrong quarter*. The answer looks fluent and is quietly wrong.
+2. **Ungrounded numbers.** An LLM asked to compare figures will produce a table whether or not the retrieved text actually contains those figures.
+
+So the pipeline is built around a single rule — *every answer is a claim that has to survive its own citations* — implemented as a LangGraph state machine:
+
+1. **Decompose** the question into deterministic metadata targets (`ticker`, `years`, `quarters`, `metric`) instead of embedding the raw question and hoping.
+2. **Retrieve per period, with hard payload filters** on `ticker` + `fiscal_year` + `fiscal_period`, so one period's chunks can never leak into another period's context.
+3. **Rerank** each period's candidates with a local cross-encoder (FlashRank), preferring financial tables over narrative boilerplate.
+4. **Grade** the retrieved set; if a period's data is missing, say so instead of improvising.
+5. **Generate** the comparison, then **verify** it: a grounding node re-checks the answer's numerical claims against the retrieved filing text, with one regeneration retry before the answer is flagged rather than shipped silently.
+
+The stack is deliberately zero-dollar: local HuggingFace embeddings (`all-MiniLM-L6-v2`), Qdrant Cloud free tier, and Groq's free API tier (`llama-3.3-70b-versatile`, temperature 0.0).
+
+## Measurement Status — What Is and Is Not Claimed
+
+This project previously quoted retrieval numbers (a "7.25 ms P50 latency", "100% Top-4 table retrieval") that were never measured anywhere in the repository. They have been removed, and this section exists so they are not replaced by new ones:
+
+| Claim type | Status |
+|---|---|
+| End-to-end latency | A **budget**, not a measurement: ~2.5–4.5 s per 2-period comparison, broken down in `docs/ARCHITECTURE.md` §4. Synthesis on Groq (~1–2.5 s) is the dominant cost. |
+| Retrieval latency | **Measurable, not yet measured.** `benchmarks/benchmark_retrieval.py` times filtered search against a real, populated Qdrant collection. Until it is run against one, no latency number is quoted. See `benchmarks/README.md` for exactly what it does and does not measure. |
+| Metadata isolation | **Enforced and test-covered**, not benchmarked as a percentage: `search_filtered` always builds the ticker/year/period payload filter, and `tests/test_metadata_isolation.py` fails if it ever doesn't. |
+| Answer / retrieval accuracy | **No labelled evaluation set exists**, so no accuracy percentage is claimed anywhere. The grounding verifier (below) is a per-answer check, not an accuracy benchmark. |
+| Test suite | 37 tests across 5 files (`pytest`), covering chunking, EDGAR ingestion (mocked HTTP), metadata isolation, graph nodes, and the end-to-end pipeline (mocked graph). |
+
+---
+
+## 🚀 Core Architectural Features
+
+### Deterministic Query Decomposition (`src/nodes.py: decompose_query`)
+
+Comparative questions are parsed into structured targets — ticker, the list of (year, quarter) periods, and the metric — before any vector search happens. Retrieval then runs **once per period** against that period's metadata, which turns "compare Q2 2024 with Q2 2025" into two small, well-scoped searches instead of one fuzzy one. State is passed node to node through a typed `AgentState`, so every step's inputs and outputs are inspectable.
+
+### Metadata-Isolated Vector Search (`src/database.py`)
+
+Every search goes through `search_filtered`, which **always** attaches a Qdrant payload filter on `ticker`, `fiscal_year`, and `fiscal_period` — there is no code path that searches the collection unfiltered. The collection auto-creates payload indexes on those fields. This is the mechanism that prevents cross-quarter contamination, and it is locked in by tests: `tests/test_metadata_isolation.py` asserts the filter is built for every call.
+
+### Table-Preserving Ingestion + Real Prose Chunking (`src/parser.py`)
+
+SEC filings live in their tables, so ingestion treats tables and prose differently:
+
+- **Tables** are extracted with `pdfplumber` and serialized to Markdown **as single, unsplittable chunks** — a table cut in half is a wrong number waiting to happen.
+- **Prose** is split into overlapping chunks of **~1,200 characters with ~150 characters of overlap** (`CHUNK_SIZE`/`CHUNK_OVERLAP`), so a fact straddling a boundary survives whole in at least one chunk.
+
+Every chunk carries its `ticker` / `fiscal_year` / `fiscal_period` / `page` / `type` metadata into Qdrant — the metadata the isolation filter and the citations are built from.
+
+### FlashRank Reranking (`src/nodes.py: retrieve_filtered_docs`)
+
+Per period, filtered search retrieves 5 candidates; a local FlashRank cross-encoder (`ms-marco-TinyBERT-L-2-v2`) reranks them down to the **top 3** that actually reach the generator. Reranking runs locally (no API cost, no extra network hop) and is what lets dense financial tables outrank the boilerplate disclosure narrative that surrounds them.
+
+### Grading and the Missing-Data Path (`grade_documents`, `handle_missing_data`)
+
+After retrieval, a grading node checks whether the retrieved context is actually relevant. If a requested period has no usable data, the graph routes to `handle_missing_data` and the response says that period is missing — a boring, correct answer instead of a confident, invented one.
+
+### Grounding Verification Loop (`verify_grounding`)
+
+The generated comparison is not returned directly. `verify_grounding` cross-references the answer's **numerical claims** against the raw retrieved context. If a claim is ungrounded and the retry budget remains (`retry_count < MAX_GENERATION_RETRIES`), the graph loops through `increment_retry` back to generation once more; if it is still ungrounded after that, the response is routed to `handle_hallucination` and returned with `hallucination_detected: true` rather than presented as fact. It is an LLM-based check, not a formal proof — see *Known Limitations*.
+
+### SEC EDGAR Ingestion (`src/edgar.py`)
+
+Filings no longer have to be downloaded and uploaded by hand. The EDGAR client resolves ticker → CIK → latest filing of a requested form and saves the primary document into `data/raw/`:
+
+```bash
+python scripts/fetch_filing.py --ticker AAPL --form 10-Q
+# or via the API: POST /ingest-edgar  { "ticker": "AAPL", "form": "10-Q" }
+```
+
+Manual PDF upload (`POST /ingest`) still works, and it fails honestly: if Qdrant rejects the write, the endpoint returns the real **500** error — an earlier version swallowed storage failures and reported success for filings that were never stored.
+
+---
+
+## 🛠️ System Architecture & Workflow
+
+```
+           +-----------------------------+
+           | User Prompt / API Request   |
+           +--------------+--------------+
+                          |
+                          v
+            +----------------------------+
+            |   decompose_query Node     |
+            | (Extract Ticker & Quarters)|
+            +-------------+--------------+
+                          |
+                          v
+            +----------------------------+
+            |   Filtered Vector Search   |
+            |     (Qdrant Cloud)         |
+            +-------------+--------------+
+                          |
+                          v
+            +----------------------------+
+            |    FlashRank Reranking     |
+            +-------------+--------------+
+                          |
+                          v
+       +----+    grade_documents Node    +----+
+       |    +----------------------------+    |
+[Irrelevant / Missing]                 [Relevant Context]
+       |                                      |
+       v                                      v
++-----------------------+              +----------------------+
+|  handle_missing_data  |              | generate_comparison  |
++----------+------------+              +----------+-----------+
+           |                                      |
+           |                                      v
+           |                           +----------------------+
+           |                     +-----+   verify_grounding   +-----+
+           |                     |     +----------------------+     |
+           |            [Hallucination]                       [Grounded]
+           |                     |                                  |
+           |                     v                                  v
+           |          +---------------------+                      END
+           +--------->| handle_hallucination|
+                       +----------+----------+
+                                  |
+                                  v
+                                 END
+```
+
+A fuller step-by-step lifecycle is in `docs/FLOW.md`; topology and latency budgets in `docs/ARCHITECTURE.md`; the reasoning behind the design choices in `docs/DECISIONS.md` (ADRs).
+
+---
+
+## 📦 Project Directory Structure
+
+```
+financial-intelligence-rag/
+├── .github/workflows/ci.yml       # GitHub Actions test & build workflow
+├── benchmarks/
+│   ├── benchmark_retrieval.py     # Retrieval-latency benchmark (real runs only)
+│   └── README.md                  # What the benchmark does / does not measure
+├── data/
+│   ├── README.md                  # Data layout and how to fetch filings
+│   └── raw/                       # Staging directory for SEC PDFs (EDGAR lands here)
+├── scripts/
+│   ├── fetch_filing.py            # Download the latest filing for a ticker from EDGAR
+│   └── make_sample_filing.py      # Generate a tiny synthetic sample filing PDF
+├── docs/
+│   ├── ARCHITECTURE.md            # System topology & latency budgets
+│   ├── CONSTRAINTS.md             # Non-negotiable technical guardrails
+│   ├── DECISIONS.md               # Architecture Decision Records (ADRs)
+│   ├── FLOW.md                    # Detailed step-by-step query lifecycle
+│   └── HANDOVER.md                # Engineering session handoff summary
+├── src/
+│   ├── app.py                     # FastAPI server (health, ingest, ingest-edgar, query)
+│   ├── config.py                  # Pydantic Settings & environment schema
+│   ├── database.py                # Qdrant manager with auto payload indexing; search_filtered
+│   ├── edgar.py                   # SEC EDGAR client (ticker -> CIK -> filing)
+│   ├── graph.py                   # Compiled LangGraph state machine & edges
+│   ├── nodes.py                   # Graph nodes: decompose, retrieve+rerank, grade, generate, verify
+│   ├── parser.py                  # PDF table extraction + prose chunking (1200/150)
+│   └── state.py                   # TypedDict state definition
+├── tests/
+│   ├── test_pipeline.py           # End-to-end pipeline tests (mocked graph)
+│   ├── test_nodes.py              # Unit tests for individual graph nodes
+│   ├── test_chunking.py           # Prose chunker + parse_pdf tests
+│   ├── test_metadata_isolation.py # search_filtered always filters ticker/year/period
+│   └── test_edgar.py              # EDGAR client tests (mocked HTTP, no network)
+├── .env.example                   # Environment configuration template
+├── docker-compose.yml             # Multi-service Docker deployment config
+├── Dockerfile                     # API container image (Python 3.11)
+├── Dockerfile.frontend            # Streamlit frontend container image
+├── frontend.py                    # Streamlit interactive web dashboard
+├── LICENSE                        # MIT License
+└── requirements.txt
+```
+
+---
+
+## ⚡ Full Execution & Deployment Guide
+
+### 1. Setup
+
+```bash
+git clone https://github.com/ishaaaan17/financial-intelligence-rag.git
+cd financial-intelligence-rag
+
+python -m venv rag
+.\rag\Scripts\Activate.ps1       # Windows PowerShell
+source rag/bin/activate          # Linux / macOS
+
+pip install -r requirements.txt
+```
+
+Create a `.env` in the project root:
+
+```
+GROQ_API_KEY=gsk_your_groq_api_key_here
+QDRANT_URL=https://your-cluster-url.qdrant.io:6333
+QDRANT_API_KEY=your_qdrant_api_key_here
+COLLECTION_NAME=sec_filings
+EMBEDDING_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
+LLM_MODEL=llama-3.3-70b-versatile
+LLM_TEMPERATURE=0.0
+```
+
+### 2. Ingest a filing
+
+```bash
+python scripts/fetch_filing.py --ticker AAPL --form 10-Q   # from EDGAR, into data/raw/
+# then upload it via POST /ingest with its ticker / fiscal_year / fiscal_period,
+# or POST /ingest-edgar { "ticker": "AAPL", "form": "10-Q" } to fetch it server-side
+```
+
+### 3. Run the application
+
+**Local (two terminals):**
+
+```bash
+uvicorn src.app:app --reload --host 127.0.0.1 --port 8000   # API + Swagger at /docs
+streamlit run frontend.py                                   # UI at http://localhost:8501
+```
+
+**Docker:**
+
+```bash
+docker-compose up --build -d
+docker-compose logs -f
+```
+
+### 4. Run the tests
+
+```bash
+pytest -v tests/
+```
+
+37 tests; none of them need network access or API keys (EDGAR and the graph are mocked where appropriate).
+
+### 5. Measure retrieval (optional, needs a populated Qdrant)
+
+```bash
+python benchmarks/benchmark_retrieval.py
+```
+
+Read `benchmarks/README.md` first — it states precisely what the script times (filtered vector search only) and what it does not (end-to-end query latency).
+
+---
+
+## 📡 REST API Reference
+
+### `GET /health`
+Probe endpoint for cloud health checks and load balancers.
+
+### `POST /ingest`
+Upload and tag an SEC 10-Q/10-K filing PDF.
+**Form Data:** `ticker` (str), `fiscal_year` (int), `fiscal_period` (str), `file` (PDF binary).
+Storage failures return a real 500 — a 200 means the filing was actually written to Qdrant.
+
+### `POST /ingest-edgar`
+Fetch the latest filing of a given form for a ticker directly from SEC EDGAR and save its primary document into `data/raw/`.
+**JSON Body:** `{ "ticker": "AAPL", "form": "10-Q" }`
+
+### `POST /query`
+Execute a multi-period comparative financial query.
+
+**Payload:**
+```json
+{ "query": "Compare Apple's R&D spend between Q2 2024 and Q2 2025" }
+```
+
+**Response:**
+```json
+{
+  "query": "Compare Apple's R&D spend between Q2 2024 and Q2 2025",
+  "ticker": "AAPL",
+  "answer": "### Comparison of Apple's R&D Spend...\n\n| Period | R&D Spend (in millions) | Absolute Change | Percentage Change |\n| --- | --- | --- | --- |\n| Q2 2024 | $7,907 | - | - |\n| Q2 2025 | $8,550 | +$643 | +8.13% |",
+  "citations": [
+    { "ticker": "AAPL", "fiscal_year": 2024, "fiscal_period": "Q2", "page": 1, "type": "table" }
+  ],
+  "hallucination_detected": false
+}
+```
+
+---
+
+## 🌐 Hosting
+
+The previous AWS EC2 demo instance is no longer running, so its URLs have been removed rather than left as dead links. The current hosting plan:
+
+| Piece | Host |
+|---|---|
+| **Frontend** (web UI) | **Vercel** — static UI (built separately) |
+| **Backend API** (FastAPI, this repo) | **Hugging Face Spaces (Docker)** or **Render** — this repo's `Dockerfile` |
+| **Vector store** | Qdrant Cloud free tier (unchanged) |
+| **LLM** | Groq API (unchanged) |
+
+Deployment URLs will be added here once the frontend and API are live. Until then, run everything locally with the guide above — Docker (`docker-compose up`) works exactly as documented.
+
+---
+
+## Known Limitations
+
+- **Not currently deployed.** The EC2 demo is gone and the Vercel + HF Spaces/Render hosting above is a plan with the pieces built, not a live deployment. There is no public URL for this system right now.
+- **Latency figures are budgets, not measurements.** The ~2.5–4.5 s end-to-end figure is the design budget in `docs/ARCHITECTURE.md`; retrieval latency has a benchmark script but has not been run against a populated production collection, so no measured number is quoted.
+- **No accuracy evaluation exists.** There is no labelled question/answer set for this corpus, so retrieval quality and answer correctness are not quantified. The grounding verifier checks each answer's numbers against its own retrieved context — it can catch numbers that appear nowhere in the filing text, but it cannot catch a *wrong period's* real number if decomposition targeted the wrong period, an error inside the filing itself, or a subtly wrong non-numerical claim. It is an LLM judgement, not a proof.
+- **Decomposition is LLM-driven.** An ambiguously worded question can be decomposed into the wrong periods or metric; the grading and missing-data paths keep that from becoming a silently invented answer, but they cannot make the interpretation right.
+- **Free-tier ceilings.** Groq's free tier rate-limits synthesis (the dominant latency cost), and Qdrant's free tier caps collection size; a large multi-company corpus would need paid tiers or self-hosting.
+- **Ingestion is not query-fast.** Parsing and embedding a full 10-K takes seconds to ~a minute depending on length and table density; it runs outside the query path by design.
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for details.
